@@ -46,7 +46,7 @@ class UserVisit extends Model
     /**
      * Сохранить посещение
      * Использует прямой SQL для работы с таблицей без первичного ключа
-     * Если запись с такой датой и IP уже существует, ничего не делает (ON CONFLICT DO NOTHING)
+     * Уникальный индекс на (visit_date, visit_ip) удален - можно создавать несколько записей
      *
      * @param string $visitIp
      * @param string $app
@@ -57,8 +57,7 @@ class UserVisit extends Model
     {
         $visitDate = now()->toDateString();
         
-        // Используем PostgreSQL ON CONFLICT для атомарной вставки
-        // Если запись уже существует, ничего не делаем (DO NOTHING)
+        // Просто вставляем запись - уникального индекса больше нет
         if ($userId !== null) {
             DB::statement('
                 INSERT INTO user_visits (visit_date, visit_ip, app, user_id)
