@@ -49,14 +49,15 @@ class UserFeedback extends Model
      */
     public static function saveFeedback(string $visitIp, string $app, string $text): self
     {
-        // Используем DB facade напрямую, чтобы полностью обойти механизмы Eloquent
-        // которые могут пытаться добавить timestamps даже при $timestamps = false
-        $id = DB::table('user_feedback')->insertGetId([
-            'visit_ip' => $visitIp,
-            'visit_date' => now()->toDateString(),
-            'app' => $app,
-            'text' => $text,
-        ]);
+        // Используем прямой SQL запрос, чтобы гарантированно избежать timestamps
+        $visitDate = now()->toDateString();
+        
+        $id = DB::selectOne(
+            "INSERT INTO user_feedback (visit_ip, visit_date, app, text) 
+             VALUES (?, ?, ?, ?) 
+             RETURNING id",
+            [$visitIp, $visitDate, $app, $text]
+        )->id;
         
         return static::find($id);
     }
