@@ -57,7 +57,7 @@ class UserFeedback extends Model
      * @param string $visitIp
      * @param string $app
      * @param string $text
-     * @param string|null $uuid UUID пользователя (необязательно)
+     * @param int|null $uuid
      * @return void
      */
     public static function saveFeedback(string $visitIp, string $app, string $text, ?string $uuid = null): void
@@ -65,11 +65,7 @@ class UserFeedback extends Model
         $userId = null;
 
         if ($uuid) {
-            // Используем параметризованный запрос для правильной обработки UUID
-            $user = DB::selectOne(
-                'SELECT id FROM users WHERE uuid = ? LIMIT 1',
-                [$uuid]
-            );
+            $user = DB::table('users')->where('uuid', $uuid)->first();
             $userId = $user?->id;
         }
 
