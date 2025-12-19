@@ -6,12 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @property int                             $id
  * @property string|null                     $visit_ip
  * @property string                          $visit_date
  * @property string|null                     $text
  * @property string|null                     $app
- * @property \Illuminate\Support\Carbon|null $created_at
  * @method static create(array $array)
  */
 class UserFeedback extends Model
@@ -19,6 +17,10 @@ class UserFeedback extends Model
     protected $table = 'user_feedback';
 
     public $timestamps = false;
+    
+    // Указываем, что в таблице нет первичного ключа id
+    public $incrementing = false;
+    protected $primaryKey = null;
 
     /**
      * @var array<int, string>
@@ -40,25 +42,22 @@ class UserFeedback extends Model
     /**
      * Сохранить отзыв пользователя
      * Аналог функции SaveUserFeedback из Go
-     * Использует Eloquent для ООП подхода
+     * Использует прямой SQL для избежания проблем с timestamps и отсутствующими колонками
      *
      * @param string $visitIp
      * @param string $app
      * @param string $text
-     * @return self
+     * @return void
      */
-    public static function saveFeedback(string $visitIp, string $app, string $text): self
+    public static function saveFeedback(string $visitIp, string $app, string $text): void
     {
-        // Используем прямой SQL запрос, чтобы гарантированно избежать timestamps
+        // Используем прямой SQL запрос для вставки данных
         $visitDate = now()->toDateString();
         
-        $id = DB::selectOne(
+        DB::insert(
             "INSERT INTO user_feedback (visit_ip, visit_date, app, text) 
-             VALUES (?, ?, ?, ?) 
-             RETURNING id",
+             VALUES (?, ?, ?, ?)",
             [$visitIp, $visitDate, $app, $text]
-        )->id;
-        
-        return static::find($id);
+        );
     }
 }
