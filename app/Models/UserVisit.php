@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 class UserVisit extends Model
 {
     protected $table = 'user_visits';
-    
+
+    public $timestamps = false;
+
     /**
      * @var array<int, string>
      */

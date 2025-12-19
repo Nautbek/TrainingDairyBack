@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
 class UserFeedback extends Model
 {
     protected $table = 'user_feedback';
+
+    public $timestamps = false;
     
     /**
      * @var array<int, string>
