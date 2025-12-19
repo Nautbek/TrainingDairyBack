@@ -63,15 +63,11 @@ class UserVisit extends Model
             DB::statement('
                 INSERT INTO user_visits (visit_date, visit_ip, app, user_id)
                 VALUES (?, ?, ?, ?)
-                ON CONFLICT (visit_date, visit_ip)
-                DO NOTHING
             ', [$visitDate, $visitIp, $app, $userId]);
         } else {
             DB::statement('
                 INSERT INTO user_visits (visit_date, visit_ip, app)
                 VALUES (?, ?, ?)
-                ON CONFLICT (visit_date, visit_ip)
-                DO NOTHING
             ', [$visitDate, $visitIp, $app]);
         }
     }
