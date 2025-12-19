@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $text
  * @property string|null $app
  * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
  */
 class UserFeedback extends Model
 {
@@ -35,6 +34,19 @@ class UserFeedback extends Model
     protected $casts = [
         'visit_date' => 'date',
     ];
+    
+    /**
+     * Переопределяем методы для полного отключения timestamps
+     */
+    public function getUpdatedAtColumn(): ?string
+    {
+        return null;
+    }
+    
+    public function getCreatedAtColumn(): ?string
+    {
+        return null;
+    }
     
     /**
      * Сохранить отзыв пользователя
