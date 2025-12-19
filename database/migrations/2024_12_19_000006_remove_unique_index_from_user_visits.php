@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,10 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasTable('user_visits')) {
-            Schema::table('user_visits', function (Blueprint $table) {
-                // Удаляем уникальный индекс на (visit_date, visit_ip)
-                $table->dropUnique(['visit_date', 'visit_ip']);
-            });
+            // Удаляем уникальный индекс по точному имени
+            // В PostgreSQL уникальный индекс называется user_visits_visit_date_visit_ip_key
+            DB::statement('DROP INDEX IF EXISTS user_visits_visit_date_visit_ip_key');
         }
     }
 

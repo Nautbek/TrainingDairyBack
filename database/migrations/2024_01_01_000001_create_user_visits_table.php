@@ -17,8 +17,7 @@ return new class extends Migration
                 $table->date('visit_date');
                 $table->integer('visit_count')->default(1);
                 $table->string('app', 40)->nullable();
-                
-                $table->unique(['visit_date', 'visit_ip']);
+
                 $table->index('visit_date');
                 $table->index('app');
             });
