@@ -34,20 +34,7 @@ class UserFeedback extends Model
     protected $casts = [
         'visit_date' => 'date',
     ];
-    
-    /**
-     * Переопределяем методы для полного отключения timestamps
-     */
-    public function getUpdatedAtColumn(): ?string
-    {
-        return null;
-    }
-    
-    public function getCreatedAtColumn(): ?string
-    {
-        return null;
-    }
-    
+
     /**
      * Сохранить отзыв пользователя
      * Аналог функции SaveUserFeedback из Go
