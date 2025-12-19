@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @method static firstOrNew(array $array, array $array1)
@@ -12,6 +13,10 @@ class UserVisit extends Model
     protected $table = 'user_visits';
 
     public $timestamps = false;
+    
+    // Указываем, что в таблице нет первичного ключа id
+    public $incrementing = false;
+    protected $primaryKey = null;
 
     /**
      * @var array<int, string>
@@ -33,26 +38,19 @@ class UserVisit extends Model
     
     /**
      * Увеличить счетчик посещений или создать новую запись
-     * ООП-реализация через Eloquent без сырого SQL.
+     * Использует прямой SQL для работы с таблицей без первичного ключа
      */
     public static function incrementVisitCount(string $visitIp, string $app): void
     {
         $visitDate = now()->toDateString();
         
-        // Ищем запись по дате и IP, если нет — создаём
-        $visit = static::firstOrNew(
-            [
-                'visit_date' => $visitDate,
-                'visit_ip' => $visitIp,
-            ],
-            [
-                'app' => $app,
-                'visit_count' => 0,
-            ]
-        );
-        
-        // Инкрементируем счётчик и сохраняем модель
-        $visit->visit_count = ($visit->visit_count ?? 0) + 1;
-        $visit->save();
+        // Используем PostgreSQL ON CONFLICT для атомарного инкремента
+        // Это работает даже без первичного ключа, используя уникальный индекс
+        DB::statement('
+            INSERT INTO user_visits (visit_date, visit_ip, app, visit_count)
+            VALUES (?, ?, ?, 1)
+            ON CONFLICT (visit_date, visit_ip)
+            DO UPDATE SET visit_count = user_visits.visit_count + 1
+        ', [$visitDate, $visitIp, $app]);
     }
 }
