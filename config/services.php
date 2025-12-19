@@ -36,8 +36,8 @@ return [
     ],
 
     'telegram' => [
-        'api_url' => env('TELEGRAM_API_URL'),
-        'chat_id' => env('TELEGRAM_CHAT_ID'),
+        'api_url' => env('TELEGRAM_API_URL', ''),
+        'chat_id' => env('TELEGRAM_CHAT_ID', 0), // айди чата со мной.
     ],
 
 ];
