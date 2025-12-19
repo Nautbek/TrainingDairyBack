@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property int                             $id
@@ -48,9 +49,9 @@ class UserFeedback extends Model
      */
     public static function saveFeedback(string $visitIp, string $app, string $text): self
     {
-        // Используем insertGetId() напрямую, чтобы не использовать timestamps
-        // даже если $timestamps = false, create() может пытаться их вставить
-        $id = static::insertGetId([
+        // Используем DB facade напрямую, чтобы полностью обойти механизмы Eloquent
+        // которые могут пытаться добавить timestamps даже при $timestamps = false
+        $id = DB::table('user_feedback')->insertGetId([
             'visit_ip' => $visitIp,
             'visit_date' => now()->toDateString(),
             'app' => $app,
