@@ -13,12 +13,10 @@ return new class extends Migration
     {
         if (! Schema::hasTable('user_feedback')) {
             Schema::create('user_feedback', function (Blueprint $table) {
-                $table->id();
                 $table->string('visit_ip', 40)->nullable();
                 $table->date('visit_date');
                 $table->text('text')->nullable();
                 $table->string('app', 40)->nullable();
-                $table->timestamps();
                 
                 $table->index('visit_date');
                 $table->index('app');
