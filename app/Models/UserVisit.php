@@ -26,7 +26,16 @@ class UserVisit extends Model
         'visit_date',
         'visit_count',
         'app',
+        'user_id',
     ];
+    
+    /**
+     * Связь с пользователем
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
     
     /**
      * @var array<string, string>
@@ -39,18 +48,32 @@ class UserVisit extends Model
     /**
      * Увеличить счетчик посещений или создать новую запись
      * Использует прямой SQL для работы с таблицей без первичного ключа
+     *
+     * @param string $visitIp
+     * @param string $app
+     * @param int|null $userId ID пользователя (необязательно)
+     * @return void
      */
-    public static function incrementVisitCount(string $visitIp, string $app): void
+    public static function incrementVisitCount(string $visitIp, string $app, ?int $userId = null): void
     {
         $visitDate = now()->toDateString();
         
         // Используем PostgreSQL ON CONFLICT для атомарного инкремента
         // Это работает даже без первичного ключа, используя уникальный индекс
-        DB::statement('
-            INSERT INTO user_visits (visit_date, visit_ip, app, visit_count)
-            VALUES (?, ?, ?, 1)
-            ON CONFLICT (visit_date, visit_ip)
-            DO UPDATE SET visit_count = user_visits.visit_count + 1
-        ', [$visitDate, $visitIp, $app]);
+        if ($userId !== null) {
+            DB::statement('
+                INSERT INTO user_visits (visit_date, visit_ip, app, visit_count, user_id)
+                VALUES (?, ?, ?, 1, ?)
+                ON CONFLICT (visit_date, visit_ip)
+                DO UPDATE SET visit_count = user_visits.visit_count + 1
+            ', [$visitDate, $visitIp, $app, $userId]);
+        } else {
+            DB::statement('
+                INSERT INTO user_visits (visit_date, visit_ip, app, visit_count)
+                VALUES (?, ?, ?, 1)
+                ON CONFLICT (visit_date, visit_ip)
+                DO UPDATE SET visit_count = user_visits.visit_count + 1
+            ', [$visitDate, $visitIp, $app]);
+        }
     }
 }

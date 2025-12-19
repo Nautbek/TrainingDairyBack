@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,7 +31,16 @@ class UserFeedback extends Model
         'visit_date',
         'text',
         'app',
+        'user_id',
     ];
+
+    /**
+     * Связь с пользователем
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
     
     /**
      * @var array<string, string>
@@ -47,17 +57,31 @@ class UserFeedback extends Model
      * @param string $visitIp
      * @param string $app
      * @param string $text
+     * @param int|null $uuid
      * @return void
      */
-    public static function saveFeedback(string $visitIp, string $app, string $text): void
+    public static function saveFeedback(string $visitIp, string $app, string $text, ?int $uuid = null): void
     {
+        if ($uuid) {
+            $user = DB::table('users')->where('uuid', $uuid)->first();
+            $userId = $user?->id;
+        }
+
         // Используем прямой SQL запрос для вставки данных
         $visitDate = now()->toDateString();
         
-        DB::insert(
-            "INSERT INTO user_feedback (visit_ip, visit_date, app, text) 
-             VALUES (?, ?, ?, ?)",
-            [$visitIp, $visitDate, $app, $text]
-        );
+        if ($userId !== null) {
+            DB::insert(
+                "INSERT INTO user_feedback (visit_ip, visit_date, app, text, user_id) 
+                 VALUES (?, ?, ?, ?, ?)",
+                [$visitIp, $visitDate, $app, $text, $userId]
+            );
+        } else {
+            DB::insert(
+                "INSERT INTO user_feedback (visit_ip, visit_date, app, text) 
+                 VALUES (?, ?, ?, ?)",
+                [$visitIp, $visitDate, $app, $text]
+            );
+        }
     }
 }

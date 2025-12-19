@@ -7,6 +7,7 @@ use App\Http\Requests\UserFeedbackRequest;
 use App\Models\UserFeedback;
 use App\Services\TelegramNotificationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class UserFeedbackController extends Controller
@@ -28,8 +29,10 @@ class UserFeedbackController extends Controller
         try {
             $validated = $request->validated();
             $visitIp = $request->ip();
+
+            $uuid = $request->header('X-User-UUID') ?? $request->input('uuid');
             
-            UserFeedback::saveFeedback($visitIp, $validated['app'], $validated['text']);
+            UserFeedback::saveFeedback($visitIp, $validated['app'], $validated['text'], $uuid);
 
             // Отправка уведомления в Telegram
             $this->telegramService->sendFeedbackNotification($validated['app'], $validated['text']);

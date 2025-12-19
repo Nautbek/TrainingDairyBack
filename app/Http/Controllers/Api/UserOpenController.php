@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserOpenRequest;
 use App\Models\UserVisit;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class UserOpenController extends Controller
@@ -22,8 +23,10 @@ class UserOpenController extends Controller
         try {
             $visitIp = $request->ip();
             $app = $request->validated()['app'];
-            
-            UserVisit::incrementVisitCount($visitIp, $app);
+
+            $uuid = $request->header('X-User-UUID') ?? $request->input('uuid');
+
+            UserVisit::incrementVisitCount($visitIp, $app, $uuid);
 
             return response()->json([
                 'status' => 'Ok'
