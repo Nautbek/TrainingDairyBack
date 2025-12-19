@@ -13,9 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasTable('user_visits')) {
-            // Удаляем уникальный индекс по точному имени
-            // В PostgreSQL уникальный индекс называется user_visits_visit_date_visit_ip_key
-            DB::statement('DROP INDEX IF EXISTS user_visits_visit_date_visit_ip_key');
+            // Удаляем constraint, который автоматически удалит связанный индекс
+            // В PostgreSQL уникальный constraint называется user_visits_visit_date_visit_ip_key
+            DB::statement('ALTER TABLE user_visits DROP CONSTRAINT IF EXISTS user_visits_visit_date_visit_ip_key');
         }
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('user_visits')) {
             Schema::table('user_visits', function (Blueprint $table) {
-                // Восстанавливаем уникальный индекс
+                // Восстанавливаем уникальный constraint (который создаст индекс)
                 $table->unique(['visit_date', 'visit_ip']);
             });
         }
