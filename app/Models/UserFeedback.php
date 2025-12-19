@@ -5,19 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @property int $id
- * @property string|null $visit_ip
- * @property string $visit_date
- * @property string|null $text
- * @property string|null $app
+ * @property int                             $id
+ * @property string|null                     $visit_ip
+ * @property string                          $visit_date
+ * @property string|null                     $text
+ * @property string|null                     $app
  * @property \Illuminate\Support\Carbon|null $created_at
+ * @method static create(array $array)
  */
 class UserFeedback extends Model
 {
     protected $table = 'user_feedback';
 
     public $timestamps = false;
-    
+
     /**
      * @var array<int, string>
      */
@@ -47,11 +48,15 @@ class UserFeedback extends Model
      */
     public static function saveFeedback(string $visitIp, string $app, string $text): self
     {
-        return static::create([
+        // Используем insertGetId() напрямую, чтобы не использовать timestamps
+        // даже если $timestamps = false, create() может пытаться их вставить
+        $id = static::insertGetId([
             'visit_ip' => $visitIp,
             'visit_date' => now()->toDateString(),
             'app' => $app,
             'text' => $text,
         ]);
+        
+        return static::find($id);
     }
 }
