@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,16 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Проверка существования таблицы через прямой SQL запрос
-        $tableExists = DB::selectOne(
-            "SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'user_visits'
-            )"
-        );
-
-        if (! $tableExists->exists) {
+        if (! Schema::hasTable('user_visits')) {
             Schema::create('user_visits', function (Blueprint $table) {
                 $table->string('visit_ip', 40)->nullable();
                 $table->date('visit_date');

@@ -24,7 +24,6 @@ class UserVisit extends Model
     protected $fillable = [
         'visit_ip',
         'visit_date',
-        'visit_count',
         'app',
         'user_id',
     ];
@@ -42,12 +41,12 @@ class UserVisit extends Model
      */
     protected $casts = [
         'visit_date' => 'date',
-        'visit_count' => 'integer',
     ];
-    
+
     /**
-     * Увеличить счетчик посещений или создать новую запись
+     * Сохранить посещение
      * Использует прямой SQL для работы с таблицей без первичного ключа
+     * Если запись с такой датой и IP уже существует, ничего не делает (ON CONFLICT DO NOTHING)
      *
      * @param string $visitIp
      * @param string $app
@@ -58,21 +57,21 @@ class UserVisit extends Model
     {
         $visitDate = now()->toDateString();
         
-        // Используем PostgreSQL ON CONFLICT для атомарного инкремента
-        // Это работает даже без первичного ключа, используя уникальный индекс
+        // Используем PostgreSQL ON CONFLICT для атомарной вставки
+        // Если запись уже существует, ничего не делаем (DO NOTHING)
         if ($userId !== null) {
             DB::statement('
-                INSERT INTO user_visits (visit_date, visit_ip, app, visit_count, user_id)
-                VALUES (?, ?, ?, 1, ?)
+                INSERT INTO user_visits (visit_date, visit_ip, app, user_id)
+                VALUES (?, ?, ?, ?)
                 ON CONFLICT (visit_date, visit_ip)
-                DO UPDATE SET visit_count = user_visits.visit_count + 1
+                DO NOTHING
             ', [$visitDate, $visitIp, $app, $userId]);
         } else {
             DB::statement('
-                INSERT INTO user_visits (visit_date, visit_ip, app, visit_count)
-                VALUES (?, ?, ?, 1)
+                INSERT INTO user_visits (visit_date, visit_ip, app)
+                VALUES (?, ?, ?)
                 ON CONFLICT (visit_date, visit_ip)
-                DO UPDATE SET visit_count = user_visits.visit_count + 1
+                DO NOTHING
             ', [$visitDate, $visitIp, $app]);
         }
     }

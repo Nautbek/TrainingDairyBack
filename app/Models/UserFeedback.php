@@ -60,8 +60,10 @@ class UserFeedback extends Model
      * @param int|null $uuid
      * @return void
      */
-    public static function saveFeedback(string $visitIp, string $app, string $text, ?int $uuid = null): void
+    public static function saveFeedback(string $visitIp, string $app, string $text, ?string $uuid = null): void
     {
+        $userId = null;
+
         if ($uuid) {
             $user = DB::table('users')->where('uuid', $uuid)->first();
             $userId = $user?->id;

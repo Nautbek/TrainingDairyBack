@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class UserOpenController extends Controller
 {
     /**
-     * Увеличить счетчик посещений
+     * Сохранить посещение
      * Аналог /api/user_open из Go проекта
      *
      * @param UserOpenRequest $request
@@ -23,16 +23,22 @@ class UserOpenController extends Controller
         try {
             $visitIp = $request->ip();
             $app = $request->validated()['app'];
-
+            
+            // Получаем user_id по UUID, если передан
+            $userId = null;
             $uuid = $request->header('X-User-UUID') ?? $request->input('uuid');
+            if ($uuid) {
+                $user = DB::table('users')->where('uuid', $uuid)->first();
+                $userId = $user?->id;
+            }
 
-            UserVisit::incrementVisitCount($visitIp, $app, $uuid);
+            UserVisit::incrementVisitCount($visitIp, $app, $userId);
 
             return response()->json([
                 'status' => 'Ok'
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error increment visit count: ' . $e->getMessage());
+            Log::error('Error saving visit: ' . $e->getMessage());
             
             return response()->json([
                 'error' => 'Internal Server Error'
