@@ -91,4 +91,3 @@ TELEGRAM_CHAT_ID=your_chat_id
 3. **Dependency Injection**: Сервисы внедряются через конструктор
 4. **Обработка ошибок**: Используется Laravel Log вместо прямого вывода
 5. **HTTP ответы**: Стандартизированные JSON ответы через JsonResponse
-
