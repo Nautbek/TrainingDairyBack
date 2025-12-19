@@ -28,7 +28,11 @@ class UserOpenController extends Controller
             $userId = null;
             $uuid = $request->header('X-User-UUID') ?? $request->input('uuid');
             if ($uuid) {
-                $user = DB::table('users')->where('uuid', $uuid)->first();
+                // Используем параметризованный запрос для правильной обработки UUID
+                $user = DB::selectOne(
+                    'SELECT id FROM users WHERE uuid = ? LIMIT 1',
+                    [$uuid]
+                );
                 $userId = $user?->id;
             }
 
