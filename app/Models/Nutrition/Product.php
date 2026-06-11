@@ -4,6 +4,7 @@ namespace App\Models\Nutrition;
 
 use App\Enums\Nutrition\ProductStatus;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -49,5 +50,20 @@ class Product extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_uuid', 'uuid');
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     */
+    public function scopeSearchByName(Builder $query, string $name): void
+    {
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $name);
+        $pattern = '%'.$escaped.'%';
+
+        if ($query->getConnection()->getDriverName() === 'pgsql') {
+            $query->where('name', 'ilike', $pattern);
+        } else {
+            $query->whereRaw("LOWER(name) LIKE LOWER(?) ESCAPE '\\'", [$pattern]);
+        }
     }
 }

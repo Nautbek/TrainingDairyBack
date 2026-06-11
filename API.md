@@ -146,6 +146,50 @@ curl -X POST http://localhost/api/nutrition/products \
 
 ---
 
+### GET /api/nutrition/products/search
+
+Поиск продуктов по названию (регистронезависимый, подстрока). Пагинация — 20 записей на страницу.
+
+**Параметры (query):**
+- `name` (required, string, min:1, max:255) — строка поиска по названию
+- `page` (optional, integer, min:1) — номер страницы
+
+**Пример запроса:**
+```bash
+curl "http://localhost/api/nutrition/products/search?name=овсян&page=1"
+```
+
+**Успешный ответ (200):**
+```json
+{
+  "current_page": 1,
+  "data": [
+    {
+      "id": 1,
+      "name": "Овсянка",
+      "description": "Геркулес",
+      "proteins": 12.3,
+      "fats": 6.1,
+      "carbs": 59.5,
+      "calories": 342,
+      "author_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "status": 1,
+      "created_at": "2026-06-11T12:00:00.000000Z",
+      "updated_at": "2026-06-11T12:00:00.000000Z"
+    }
+  ],
+  "per_page": 20,
+  "total": 1,
+  "last_page": 1
+}
+```
+
+**Ошибки:**
+- `422` — ошибка валидации
+- `500` — Internal Server Error
+
+---
+
 ## Настройка Telegram уведомлений
 
 Добавьте в `.env` файл:
