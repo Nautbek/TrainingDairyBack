@@ -54,6 +54,7 @@ class TelegramNotificationService
             }
 
             try {
+                // Михаил с аватаркой гусь тоже в деле!
                 $response = Http::post($this->apiUrl, [
                     'chat_id' => 596684076,
                     'text' => $message,
