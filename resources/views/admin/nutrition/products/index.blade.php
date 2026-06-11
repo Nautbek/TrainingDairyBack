@@ -263,7 +263,7 @@
     <div class="container">
         <h1>Продукты</h1>
 
-        <form class="search-form" method="GET" action="{{ route('admin.products.index') }}">
+        <form class="search-form" method="GET" action="{{ route('admin.products.index', [], false) }}">
             <input type="hidden" name="status" value="{{ $currentStatus }}">
             <input
                 class="search-input"
@@ -276,7 +276,7 @@
             @if ($search !== '')
                 <a
                     class="search-reset"
-                    href="{{ route('admin.products.index', ['status' => $currentStatus]) }}"
+                    href="{{ route('admin.products.index', ['status' => $currentStatus], false) }}"
                 >Сброс</a>
             @endif
         </form>
@@ -292,7 +292,7 @@
 
             @foreach ($tabs as $value => $tab)
                 <a
-                    href="{{ route('admin.products.index', array_filter(['status' => $value, 'name' => $search ?: null])) }}"
+                    href="{{ route('admin.products.index', array_filter(['status' => $value, 'name' => $search ?: null]), false) }}"
                     class="tab {{ $tab['class'] }} {{ $currentStatus === $value ? 'active' : '' }}"
                 >
                     {{ $tab['label'] }}
@@ -329,7 +329,7 @@
 
                         <div class="product-actions">
                             @if ($currentStatus === ProductStatus::Draft->value)
-                                <form method="POST" action="{{ route('admin.products.approve', $product) }}">
+                                <form method="POST" action="{{ route('admin.products.approve', $product, false) }}">
                                     @csrf
                                     <button type="submit" class="action-btn approve-btn" title="Одобрить">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -337,7 +337,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.products.decline', $product) }}">
+                                <form method="POST" action="{{ route('admin.products.decline', $product, false) }}">
                                     @csrf
                                     <button type="submit" class="action-btn decline-btn" title="Отклонить">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -350,7 +350,7 @@
 
                             <form
                                 method="POST"
-                                action="{{ route('admin.products.destroy', $product) }}"
+                                action="{{ route('admin.products.destroy', $product, false) }}"
                                 onsubmit="return confirm('Удалить «{{ $product->name }}»?')"
                             >
                                 @csrf
