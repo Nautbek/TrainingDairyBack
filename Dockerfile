@@ -1,16 +1,22 @@
 FROM php:8.4-fpm-alpine
 
-# Установка системных зависимостей
-RUN apk add --no-cache \
-    git \
-    curl \
-    libpng-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    postgresql-dev \
-    oniguruma-dev \
-    icu-dev
+# Системные зависимости (retry — Alpine CDN иногда отваливается по DNS)
+RUN set -eux; \
+    for i in 1 2 3 4 5; do \
+        apk update && apk add --no-cache \
+            git \
+            curl \
+            libpng-dev \
+            libzip-dev \
+            zip \
+            unzip \
+            postgresql-dev \
+            oniguruma-dev \
+            icu-dev \
+        && exit 0; \
+        echo "apk add retry ${i}/5..."; sleep 5; \
+    done; \
+    exit 1
 
 # Установка PHP расширений
 RUN docker-php-ext-install \
@@ -27,10 +33,15 @@ RUN docker-php-ext-install \
     opcache
 
 # Установка Redis расширения
-RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
-    && pecl install redis \
+RUN set -eux; \
+    for i in 1 2 3 4 5; do \
+        apk update && apk add --no-cache pcre-dev ${PHPIZE_DEPS} \
+        && break; \
+        echo "apk add retry ${i}/5..."; sleep 5; \
+    done; \
+    pecl install redis \
     && docker-php-ext-enable redis \
-    && apk del pcre-dev $PHPIZE_DEPS
+    && apk del pcre-dev ${PHPIZE_DEPS}
 
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -47,4 +58,3 @@ WORKDIR /var/www/html
 EXPOSE 9000
 
 CMD ["php-fpm"]
-
