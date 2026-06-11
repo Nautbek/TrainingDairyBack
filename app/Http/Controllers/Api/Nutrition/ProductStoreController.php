@@ -9,6 +9,7 @@ use App\Models\Nutrition\Product;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProductStoreController extends Controller
 {
@@ -23,7 +24,12 @@ class ProductStoreController extends Controller
                 ], 401);
             }
 
+            do {
+                $productUuid = (string) Str::uuid();
+            } while (Product::query()->where('uuid', $productUuid)->exists());
+
             $product = Product::query()->create([
+                'uuid' => $productUuid,
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'proteins' => $validated['proteins'],
@@ -36,6 +42,7 @@ class ProductStoreController extends Controller
 
             return response()->json([
                 'id' => $product->id,
+                'uuid' => $product->uuid,
                 'status' => $product->status->value,
             ], 201);
         } catch (\Exception $e) {

@@ -26,12 +26,14 @@ class NutritionProductStoreTest extends TestCase
         ]);
 
         $response->assertStatus(201)
+            ->assertJsonStructure(['id', 'uuid', 'status'])
             ->assertJson([
                 'status' => ProductStatus::Draft->value,
             ]);
 
         $this->assertDatabaseHas('nutrition_products', [
             'name' => 'Овсянка',
+            'uuid' => $response->json('uuid'),
             'author_uuid' => $uuid,
             'status' => ProductStatus::Draft->value,
         ]);

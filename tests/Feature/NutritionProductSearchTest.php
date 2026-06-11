@@ -27,6 +27,7 @@ class NutritionProductSearchTest extends TestCase
         ]);
 
         Product::query()->create([
+            'uuid' => (string) Str::uuid(),
             'name' => 'Овсянка геркулес',
             'description' => 'Каша',
             'proteins' => 12,
@@ -38,6 +39,7 @@ class NutritionProductSearchTest extends TestCase
         ]);
 
         Product::query()->create([
+            'uuid' => (string) Str::uuid(),
             'name' => 'Рис белый',
             'proteins' => 7,
             'fats' => 0.7,
@@ -62,7 +64,7 @@ class NutritionProductSearchTest extends TestCase
             ->assertJsonPath('data.0.status', ProductStatus::Active->value)
             ->assertJsonStructure([
                 'data' => [
-                    ['id', 'name', 'description', 'proteins', 'fats', 'carbs', 'calories', 'author_uuid', 'status', 'created_at', 'updated_at'],
+                    ['id', 'uuid', 'name', 'description', 'proteins', 'fats', 'carbs', 'calories', 'author_uuid', 'status', 'created_at', 'updated_at'],
                 ],
                 'current_page',
                 'last_page',

@@ -63,7 +63,7 @@ class NutritionProductSeeder extends Seeder
         foreach ($products as $product) {
             Product::query()->firstOrCreate(
                 ['name' => $product['name'], 'status' => $product['status']],
-                $product,
+                [...$product, 'uuid' => (string) Str::uuid()],
             );
         }
     }

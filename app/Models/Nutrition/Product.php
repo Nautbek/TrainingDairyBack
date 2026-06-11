@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
+ * @property string $uuid
  * @property string $name
  * @property string|null $description
  * @property float $proteins
@@ -26,6 +27,7 @@ class Product extends Model
     protected $table = 'nutrition_products';
 
     protected $fillable = [
+        'uuid',
         'name',
         'description',
         'proteins',
