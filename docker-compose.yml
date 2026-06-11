@@ -23,6 +23,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-password}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    ports:
+      - "80:80"
     depends_on:
       postgres:
         condition: service_healthy
