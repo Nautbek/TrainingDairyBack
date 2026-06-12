@@ -10,6 +10,8 @@ Route::get('/', function () {
 
 Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
 
+Route::get('/payment/return', fn () => view('payment.return'))->name('payment.return');
+
 Route::prefix('admin23432150732412134')->group(function () {
     Route::get('/', [NutritionProductController::class, 'index'])->name('admin.products.index');
     Route::post('/products/{product}/approve', [NutritionProductController::class, 'approve'])->name('admin.products.approve');

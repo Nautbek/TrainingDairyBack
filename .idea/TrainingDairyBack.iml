@@ -130,6 +130,9 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/webmozart/assert" />
       <excludeFolder url="file://$MODULE_DIR$/storage/app" />
       <excludeFolder url="file://$MODULE_DIR$/storage/framework" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/php-ds/php-ds" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yoomoney/yookassa-sdk-php" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/yoomoney/yookassa-sdk-validator" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

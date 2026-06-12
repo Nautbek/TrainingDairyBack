@@ -1,0 +1,179 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\Donation\PaymentStatus;
+use App\Models\DonationPayment;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use YooKassa\Model\Notification\NotificationEventType;
+use YooKassa\Model\Payment\PaymentStatus as YooKassaPaymentStatus;
+
+class DonationPaymentService
+{
+    public function __construct(
+        private readonly YooKassaService $yooKassaService,
+        private readonly AdFreeSubscriptionService $adFreeSubscriptionService,
+    ) {}
+
+    /**
+     * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string}
+     */
+    public function createPayment(string $userUuid, int $tierAmount): array
+    {
+        $tier = config("donations.tiers.{$tierAmount}");
+
+        if ($tier === null) {
+            throw new \InvalidArgumentException('Invalid donation tier');
+        }
+
+        do {
+            $paymentUuid = (string) Str::uuid();
+        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
+
+        $payment = DonationPayment::query()->create([
+            'uuid' => $paymentUuid,
+            'user_uuid' => $userUuid,
+            'amount' => $tier['amount'],
+            'months' => $tier['months'],
+            'status' => PaymentStatus::Pending,
+        ]);
+
+        $yooKassaPayment = $this->yooKassaService->createDonationPayment($payment, $paymentUuid);
+
+        $payment->update([
+            'yookassa_payment_id' => $yooKassaPayment->getId(),
+        ]);
+
+        return [
+            'payment_uuid' => $payment->uuid,
+            'confirmation_url' => $yooKassaPayment->getConfirmation()->getConfirmationUrl(),
+            'amount' => $payment->amount,
+            'months' => $payment->months,
+            'status' => $payment->status->value,
+        ];
+    }
+
+    public function handleWebhook(array $payload): void
+    {
+        $event = $payload['event'] ?? null;
+        $object = $payload['object'] ?? null;
+
+        if (! is_array($object)) {
+            return;
+        }
+
+        if ($event === NotificationEventType::PAYMENT_SUCCEEDED) {
+            $this->markSucceeded($object);
+
+            return;
+        }
+
+        if ($event === NotificationEventType::PAYMENT_CANCELED) {
+            $this->markCanceled($object);
+        }
+    }
+
+    public function syncPayment(DonationPayment $payment): DonationPayment
+    {
+        if ($payment->yookassa_payment_id === null) {
+            return $payment;
+        }
+
+        $yooKassaPayment = $this->yooKassaService->getPayment($payment->yookassa_payment_id);
+
+        if ($yooKassaPayment === null) {
+            return $payment;
+        }
+
+        if ($yooKassaPayment->getStatus() === YooKassaPaymentStatus::SUCCEEDED) {
+            $this->applySucceeded($payment);
+        }
+
+        if ($yooKassaPayment->getStatus() === YooKassaPaymentStatus::CANCELED) {
+            $payment->update(['status' => PaymentStatus::Canceled]);
+        }
+
+        return $payment->fresh();
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentObject
+     */
+    private function markSucceeded(array $paymentObject): void
+    {
+        $payment = $this->resolvePayment($paymentObject);
+
+        if ($payment === null) {
+            return;
+        }
+
+        $this->applySucceeded($payment);
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentObject
+     */
+    private function markCanceled(array $paymentObject): void
+    {
+        $payment = $this->resolvePayment($paymentObject);
+
+        if ($payment === null || $payment->status === PaymentStatus::Succeeded) {
+            return;
+        }
+
+        $payment->update(['status' => PaymentStatus::Canceled]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentObject
+     */
+    private function resolvePayment(array $paymentObject): ?DonationPayment
+    {
+        $yookassaPaymentId = $paymentObject['id'] ?? null;
+        $metadata = $paymentObject['metadata'] ?? [];
+        $donationPaymentUuid = is_array($metadata) ? ($metadata['donation_payment_uuid'] ?? null) : null;
+
+        if (is_string($yookassaPaymentId)) {
+            $payment = DonationPayment::query()->where('yookassa_payment_id', $yookassaPaymentId)->first();
+            if ($payment !== null) {
+                return $payment;
+            }
+        }
+
+        if (is_string($donationPaymentUuid)) {
+            return DonationPayment::query()->where('uuid', $donationPaymentUuid)->first();
+        }
+
+        return null;
+    }
+
+    private function applySucceeded(DonationPayment $payment): void
+    {
+        if ($payment->status === PaymentStatus::Succeeded) {
+            return;
+        }
+
+        DB::transaction(function () use ($payment): void {
+            $payment->refresh();
+
+            if ($payment->status === PaymentStatus::Succeeded) {
+                return;
+            }
+
+            $user = User::query()->where('uuid', $payment->user_uuid)->first();
+
+            if ($user === null) {
+                return;
+            }
+
+            $this->adFreeSubscriptionService->extend($user, $payment->months);
+
+            $payment->update([
+                'status' => PaymentStatus::Succeeded,
+                'paid_at' => now(),
+            ]);
+        });
+    }
+}
