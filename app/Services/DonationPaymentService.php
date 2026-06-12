@@ -18,6 +18,58 @@ class DonationPaymentService
     ) {}
 
     /**
+     * @return array{
+     *     payment_uuid: string,
+     *     status: string,
+     *     amount: int,
+     *     months: int,
+     *     confirmation_url?: string|null,
+     *     confirmation_type?: string|null,
+     *     payment_method_type?: string|null,
+     *     ad_free_until?: string|null
+     * }
+     */
+    public function createPaymentWithToken(string $userUuid, int $tierAmount, string $paymentToken): array
+    {
+        $tier = config("donations.tiers.{$tierAmount}");
+
+        if ($tier === null) {
+            throw new \InvalidArgumentException('Invalid donation tier');
+        }
+
+        do {
+            $paymentUuid = (string) Str::uuid();
+        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
+
+        $payment = DonationPayment::query()->create([
+            'uuid' => $paymentUuid,
+            'user_uuid' => $userUuid,
+            'amount' => $tier['amount'],
+            'months' => $tier['months'],
+            'status' => PaymentStatus::Pending,
+        ]);
+
+        $yooKassaPayment = $this->yooKassaService->createDonationPaymentWithToken(
+            $payment,
+            $paymentToken,
+            $paymentUuid,
+        );
+
+        $payment->update([
+            'yookassa_payment_id' => $yooKassaPayment->getId(),
+        ]);
+
+        if ($yooKassaPayment->getStatus() === YooKassaPaymentStatus::SUCCEEDED) {
+            $this->applySucceeded($payment->fresh());
+            $user = User::query()->where('uuid', $userUuid)->first();
+
+            return $this->buildTokenPaymentResponse($payment->fresh(), $user);
+        }
+
+        return $this->buildTokenPaymentResponse($payment->fresh(), null, $yooKassaPayment);
+    }
+
+    /**
      * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string}
      */
     public function createPayment(string $userUuid, int $tierAmount): array
@@ -147,6 +199,56 @@ class DonationPaymentService
         }
 
         return null;
+    }
+
+    /**
+     * @return array{
+     *     payment_uuid: string,
+     *     status: string,
+     *     amount: int,
+     *     months: int,
+     *     confirmation_url?: string|null,
+     *     confirmation_type?: string|null,
+     *     payment_method_type?: string|null,
+     *     ad_free_until?: string|null
+     * }
+     */
+    private function buildTokenPaymentResponse(
+        DonationPayment $payment,
+        ?User $user,
+        ?\YooKassa\Model\Payment\PaymentInterface $yooKassaPayment = null,
+    ): array {
+        $response = [
+            'payment_uuid' => $payment->uuid,
+            'status' => $payment->status->value,
+            'amount' => $payment->amount,
+            'months' => $payment->months,
+        ];
+
+        if ($payment->status === PaymentStatus::Succeeded && $user?->ad_free_until !== null) {
+            $response['ad_free_until'] = $user->ad_free_until->toIso8601String();
+
+            return $response;
+        }
+
+        if ($yooKassaPayment === null) {
+            return $response;
+        }
+
+        $confirmation = $yooKassaPayment->getConfirmation();
+
+        if ($confirmation !== null) {
+            $response['confirmation_type'] = $confirmation->getType();
+            $response['confirmation_url'] = $confirmation->getConfirmationUrl();
+        }
+
+        $paymentMethod = $yooKassaPayment->getPaymentMethod();
+
+        if ($paymentMethod !== null) {
+            $response['payment_method_type'] = $paymentMethod->getType();
+        }
+
+        return $response;
     }
 
     private function applySucceeded(DonationPayment $payment): void

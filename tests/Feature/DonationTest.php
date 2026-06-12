@@ -37,8 +37,8 @@ class DonationTest extends TestCase
             'uuid' => (string) Str::uuid(),
             'user_uuid' => $uuid,
             'yookassa_payment_id' => 'yk-test-payment-id',
-            'amount' => 200,
-            'months' => 2,
+            'amount' => 300,
+            'months' => 3,
             'status' => PaymentStatus::Pending,
         ]);
 
@@ -50,7 +50,7 @@ class DonationTest extends TestCase
                 'metadata' => [
                     'donation_payment_uuid' => $payment->uuid,
                     'user_uuid' => $uuid,
-                    'months' => '2',
+                    'months' => '3',
                 ],
             ],
         ]);
@@ -72,11 +72,11 @@ class DonationTest extends TestCase
         $this->mock(DonationPaymentService::class, function ($mock): void {
             $mock->shouldReceive('createPayment')
                 ->once()
-                ->withArgs(fn (string $userUuid, int $tier): bool => $tier === 100)
+                ->withArgs(fn (string $userUuid, int $tier): bool => $tier === 120)
                 ->andReturn([
                     'payment_uuid' => 'pay-uuid',
                     'confirmation_url' => 'https://yoomoney.ru/pay',
-                    'amount' => 100,
+                    'amount' => 120,
                     'months' => 1,
                     'status' => 'pending',
                 ]);
@@ -84,13 +84,13 @@ class DonationTest extends TestCase
 
         $response = $this->postJson('/api/donations/create', [
             'uuid' => $uuid,
-            'tier' => 100,
+            'tier' => 120,
         ]);
 
         $response->assertStatus(201)
             ->assertJson([
                 'confirmation_url' => 'https://yoomoney.ru/pay',
-                'amount' => 100,
+                'amount' => 120,
                 'months' => 1,
             ]);
     }
