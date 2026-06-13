@@ -7,10 +7,12 @@ use App\Http\Requests\Donation\ConfirmDonationRequest;
 use App\Models\User;
 use App\Services\DonationPaymentService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 class ConfirmDonationController extends Controller
 {
+    use HandlesDonationErrors;
+
     public function __invoke(ConfirmDonationRequest $request, DonationPaymentService $donationPaymentService): JsonResponse
     {
         try {
@@ -27,12 +29,10 @@ class ConfirmDonationController extends Controller
             );
 
             return response()->json($payment, 201);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
-        } catch (\Exception $e) {
-            Log::error('Error confirming donation payment: '.$e->getMessage());
-
-            return response()->json(['error' => 'Internal Server Error'], 500);
+        } catch (\Throwable $e) {
+            return $this->handleDonationException($e, 'confirm donation payment failed');
         }
     }
 }
