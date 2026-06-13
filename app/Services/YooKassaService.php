@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\YooKassaApiCallException;
 use App\Models\DonationPayment;
+use App\Services\YooKassa\YooKassaRequestLogger;
 use YooKassa\Client;
+use YooKassa\Common\Exceptions\ApiException;
 use YooKassa\Model\ConfirmationType;
 use YooKassa\Model\CurrencyCode;
 use YooKassa\Model\Payment\PaymentInterface;
@@ -11,6 +14,8 @@ use YooKassa\Request\Payments\CreatePaymentResponse;
 
 class YooKassaService
 {
+    private const PAYMENTS_PATH = '/payments';
+
     private Client $client;
 
     public function __construct()
@@ -24,7 +29,7 @@ class YooKassaService
 
     public function createDonationPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
     {
-        return $this->client->createPayment([
+        $payload = [
             'amount' => [
                 'value' => number_format($payment->amount, 2, '.', ''),
                 'currency' => CurrencyCode::RUB,
@@ -40,7 +45,9 @@ class YooKassaService
                 'user_uuid' => $payment->user_uuid,
                 'months' => (string) $payment->months,
             ],
-        ], $idempotenceKey);
+        ];
+
+        return $this->createPayment($payload, $idempotenceKey);
     }
 
     public function createDonationPaymentWithToken(
@@ -48,7 +55,7 @@ class YooKassaService
         string $paymentToken,
         string $idempotenceKey,
     ): CreatePaymentResponse {
-        return $this->client->createPayment([
+        $payload = [
             'amount' => [
                 'value' => number_format($payment->amount, 2, '.', ''),
                 'currency' => CurrencyCode::RUB,
@@ -61,11 +68,42 @@ class YooKassaService
                 'user_uuid' => $payment->user_uuid,
                 'months' => (string) $payment->months,
             ],
-        ], $idempotenceKey);
+        ];
+
+        return $this->createPayment($payload, $idempotenceKey);
     }
 
     public function getPayment(string $yookassaPaymentId): ?PaymentInterface
     {
-        return $this->client->getPaymentInfo($yookassaPaymentId);
+        $path = self::PAYMENTS_PATH.'/'.$yookassaPaymentId;
+
+        try {
+            return $this->client->getPaymentInfo($yookassaPaymentId);
+        } catch (ApiException $e) {
+            throw new YooKassaApiCallException(
+                YooKassaRequestLogger::buildRequestContext('GET', $path),
+                $e,
+            );
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function createPayment(array $payload, string $idempotenceKey): CreatePaymentResponse
+    {
+        $headers = [
+            'Idempotence-Key' => $idempotenceKey,
+            'Content-Type' => 'application/json',
+        ];
+
+        try {
+            return $this->client->createPayment($payload, $idempotenceKey);
+        } catch (ApiException $e) {
+            throw new YooKassaApiCallException(
+                YooKassaRequestLogger::buildRequestContext('POST', self::PAYMENTS_PATH, $headers, $payload),
+                $e,
+            );
+        }
     }
 }

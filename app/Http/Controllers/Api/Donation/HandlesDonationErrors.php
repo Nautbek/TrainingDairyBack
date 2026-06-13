@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\Donation;
 
+use App\Exceptions\YooKassaApiCallException;
+use App\Services\YooKassa\YooKassaRequestLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use YooKassa\Common\Exceptions\ApiException;
@@ -10,17 +12,28 @@ trait HandlesDonationErrors
 {
     protected function handleDonationException(\Throwable $e, string $context): JsonResponse
     {
+        if ($e instanceof YooKassaApiCallException) {
+            $apiException = $e->getApiException();
+            $httpCode = $apiException->getCode();
+            if ($httpCode < 400 || $httpCode >= 600) {
+                $httpCode = 502;
+            }
+
+            YooKassaRequestLogger::logFailedCall($context, $e->requestContext, $apiException);
+
+            return response()->json([
+                'error' => 'YooKassa error',
+                'message' => config('app.debug') ? $apiException->getMessage() : 'Payment gateway error',
+            ], $httpCode);
+        }
+
         if ($e instanceof ApiException) {
             $httpCode = $e->getCode();
             if ($httpCode < 400 || $httpCode >= 600) {
                 $httpCode = 502;
             }
 
-            Log::error($context, [
-                'yookassa_message' => $e->getMessage(),
-                'yookassa_http_code' => $e->getCode(),
-                'yookassa_response' => $e->getResponseBody(),
-            ]);
+            YooKassaRequestLogger::logFailedCall($context, [], $e);
 
             return response()->json([
                 'error' => 'YooKassa error',
