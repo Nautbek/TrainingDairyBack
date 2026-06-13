@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use YooKassa\Model\Notification\NotificationEventType;
+use YooKassa\Model\Payment\Confirmation\ConfirmationMobileApplication;
+use YooKassa\Model\Payment\Confirmation\ConfirmationRedirect;
 use YooKassa\Model\Payment\PaymentStatus as YooKassaPaymentStatus;
 
 class DonationPaymentService
@@ -235,11 +237,15 @@ class DonationPaymentService
             return $response;
         }
 
+        if ($payment->status !== PaymentStatus::Succeeded) {
+            $response['status'] = $yooKassaPayment->getStatus();
+        }
+
         $confirmation = $yooKassaPayment->getConfirmation();
 
         if ($confirmation !== null) {
             $response['confirmation_type'] = $confirmation->getType();
-            $response['confirmation_url'] = $confirmation->getConfirmationUrl();
+            $response['confirmation_url'] = $this->resolveConfirmationUrl($confirmation);
         }
 
         $paymentMethod = $yooKassaPayment->getPaymentMethod();
@@ -249,6 +255,17 @@ class DonationPaymentService
         }
 
         return $response;
+    }
+
+    private function resolveConfirmationUrl(
+        \YooKassa\Model\Payment\Confirmation\AbstractConfirmation $confirmation,
+    ): ?string {
+        if ($confirmation instanceof ConfirmationRedirect
+            || $confirmation instanceof ConfirmationMobileApplication) {
+            return $confirmation->getConfirmationUrl();
+        }
+
+        return null;
     }
 
     private function applySucceeded(DonationPayment $payment): void
