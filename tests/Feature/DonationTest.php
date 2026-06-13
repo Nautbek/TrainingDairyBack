@@ -72,11 +72,11 @@ class DonationTest extends TestCase
         $this->mock(DonationPaymentService::class, function ($mock): void {
             $mock->shouldReceive('createPayment')
                 ->once()
-                ->withArgs(fn (string $userUuid, int $tier): bool => $tier === 120)
+                ->withArgs(fn (string $userUuid, int $tier): bool => $tier === 1)
                 ->andReturn([
                     'payment_uuid' => 'pay-uuid',
                     'confirmation_url' => 'https://yoomoney.ru/pay',
-                    'amount' => 120,
+                    'amount' => 1,
                     'months' => 1,
                     'status' => 'pending',
                 ]);
@@ -84,13 +84,13 @@ class DonationTest extends TestCase
 
         $response = $this->postJson('/api/donations/create', [
             'uuid' => $uuid,
-            'tier' => 120,
+            'tier' => 1,
         ]);
 
         $response->assertStatus(201)
             ->assertJson([
                 'confirmation_url' => 'https://yoomoney.ru/pay',
-                'amount' => 120,
+                'amount' => 1,
                 'months' => 1,
             ]);
     }
