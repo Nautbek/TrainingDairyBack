@@ -12,6 +12,14 @@ class YooKassaWebhookController extends Controller
 {
     public function __invoke(Request $request, DonationPaymentService $donationPaymentService): JsonResponse
     {
+        Log::info('YooKassa webhook received', [
+            'ip' => $request->ip(),
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'headers' => $request->headers->all(),
+            'payload' => $request->all(),
+        ]);
+
         try {
             $donationPaymentService->handleWebhook($request->all());
 
