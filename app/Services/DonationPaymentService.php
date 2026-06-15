@@ -100,13 +100,41 @@ class DonationPaymentService
             'yookassa_payment_id' => $yooKassaPayment->getId(),
         ]);
 
-        return [
-            'payment_uuid' => $payment->uuid,
-            'confirmation_url' => $yooKassaPayment->getConfirmation()->getConfirmationUrl(),
-            'amount' => $payment->amount,
-            'months' => $payment->months,
-            'status' => $payment->status->value,
-        ];
+        return $this->buildRedirectPaymentResponse($payment, $yooKassaPayment);
+    }
+
+    /**
+     * СБП через redirect (без payment_token) — у части магазинов токен SDK для СБП не принимается.
+     *
+     * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string, confirmation_type?: string|null, payment_method_type?: string}
+     */
+    public function createSbpPayment(string $userUuid, int $tierAmount): array
+    {
+        $tier = config("donations.tiers.{$tierAmount}");
+
+        if ($tier === null) {
+            throw new \InvalidArgumentException('Invalid donation tier');
+        }
+
+        do {
+            $paymentUuid = (string) Str::uuid();
+        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
+
+        $payment = DonationPayment::query()->create([
+            'uuid' => $paymentUuid,
+            'user_uuid' => $userUuid,
+            'amount' => $tier['amount'],
+            'months' => $tier['months'],
+            'status' => PaymentStatus::Pending,
+        ]);
+
+        $yooKassaPayment = $this->yooKassaService->createDonationSbpPayment($payment, $paymentUuid);
+
+        $payment->update([
+            'yookassa_payment_id' => $yooKassaPayment->getId(),
+        ]);
+
+        return $this->buildRedirectPaymentResponse($payment, $yooKassaPayment, 'sbp');
     }
 
     public function handleWebhook(array $payload): void
@@ -266,6 +294,43 @@ class DonationPaymentService
         }
 
         return null;
+    }
+
+    /**
+     * @return array{
+     *     payment_uuid: string,
+     *     confirmation_url: string|null,
+     *     amount: int,
+     *     months: int,
+     *     status: string,
+     *     confirmation_type?: string|null,
+     *     payment_method_type?: string|null
+     * }
+     */
+    private function buildRedirectPaymentResponse(
+        DonationPayment $payment,
+        \YooKassa\Model\Payment\PaymentInterface $yooKassaPayment,
+        ?string $paymentMethodType = null,
+    ): array {
+        $confirmation = $yooKassaPayment->getConfirmation();
+        $response = [
+            'payment_uuid' => $payment->uuid,
+            'confirmation_url' => $confirmation !== null ? $this->resolveConfirmationUrl($confirmation) : null,
+            'amount' => $payment->amount,
+            'months' => $payment->months,
+            'status' => $yooKassaPayment->getStatus(),
+        ];
+
+        if ($confirmation !== null) {
+            $response['confirmation_type'] = $confirmation->getType();
+        }
+
+        $method = $paymentMethodType ?? $yooKassaPayment->getPaymentMethod()?->getType();
+        if ($method !== null) {
+            $response['payment_method_type'] = $method;
+        }
+
+        return $response;
     }
 
     private function applySucceeded(DonationPayment $payment): void

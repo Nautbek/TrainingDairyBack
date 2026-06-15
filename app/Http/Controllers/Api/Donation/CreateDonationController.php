@@ -22,7 +22,9 @@ class CreateDonationController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
 
-            $payment = $donationPaymentService->createPayment($validated['uuid'], (int) $validated['tier']);
+            $payment = ($validated['payment_method'] ?? null) === 'sbp'
+                ? $donationPaymentService->createSbpPayment($validated['uuid'], (int) $validated['tier'])
+                : $donationPaymentService->createPayment($validated['uuid'], (int) $validated['tier']);
 
             return response()->json($payment, 201);
         } catch (InvalidArgumentException $e) {

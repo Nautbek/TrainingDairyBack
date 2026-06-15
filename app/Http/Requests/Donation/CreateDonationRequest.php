@@ -27,6 +27,7 @@ class CreateDonationRequest extends FormRequest
         return [
             'uuid' => ['required', 'uuid'],
             'tier' => ['required', 'integer', Rule::in(array_keys(config('donations.tiers')))],
+            'payment_method' => ['sometimes', 'string', Rule::in(['sbp'])],
         ];
     }
 }
