@@ -7,8 +7,8 @@ use App\Models\DonationPayment;
 use App\Services\YooKassa\YooKassaRequestLogger;
 use YooKassa\Client;
 use YooKassa\Common\Exceptions\ApiException;
-use YooKassa\Model\ConfirmationType;
 use YooKassa\Model\CurrencyCode;
+use YooKassa\Model\Payment\ConfirmationType;
 use YooKassa\Model\Payment\PaymentInterface;
 use YooKassa\Request\Payments\CreatePaymentResponse;
 
