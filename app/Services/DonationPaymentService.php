@@ -17,6 +17,7 @@ class DonationPaymentService
     public function __construct(
         private readonly YooKassaService $yooKassaService,
         private readonly AdFreeSubscriptionService $adFreeSubscriptionService,
+        private readonly TelegramNotificationService $telegramNotificationService,
     ) {}
 
     /**
@@ -191,7 +192,38 @@ class DonationPaymentService
             return;
         }
 
+        $wasAlreadySucceeded = $payment->status === PaymentStatus::Succeeded;
         $this->applySucceeded($payment);
+
+        if ($wasAlreadySucceeded) {
+            return;
+        }
+
+        $payment->refresh();
+        if ($payment->status !== PaymentStatus::Succeeded) {
+            return;
+        }
+
+        $user = User::query()->where('uuid', $payment->user_uuid)->first();
+        $paymentMethodType = null;
+        if (isset($paymentObject['payment_method']) && is_array($paymentObject['payment_method'])) {
+            $type = $paymentObject['payment_method']['type'] ?? null;
+            if (is_string($type)) {
+                $paymentMethodType = $type;
+            }
+        }
+
+        $yookassaPaymentId = $paymentObject['id'] ?? $payment->yookassa_payment_id;
+        $adFreeUntil = $user?->ad_free_until?->timezone(config('app.timezone'))->format('d.m.Y H:i');
+
+        $this->telegramNotificationService->sendDonationPaymentNotification(
+            $payment->amount,
+            $payment->months,
+            $payment->user_uuid,
+            $paymentMethodType,
+            is_string($yookassaPaymentId) ? $yookassaPaymentId : null,
+            $adFreeUntil,
+        );
     }
 
     /**

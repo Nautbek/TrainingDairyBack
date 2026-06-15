@@ -30,6 +30,30 @@ class TelegramNotificationService
         return $this->sendMessage($message);
     }
 
+    public function sendDonationPaymentNotification(
+        int $amount,
+        int $months,
+        string $userUuid,
+        ?string $paymentMethodType = null,
+        ?string $yookassaPaymentId = null,
+        ?string $adFreeUntil = null,
+    ): bool {
+        $method = $paymentMethodType ?: 'не указан';
+        $message = "Оплата подписки: {$amount} ₽, {$months} мес.\n"
+            ."Пользователь: {$userUuid}\n"
+            ."Способ: {$method}";
+
+        if ($yookassaPaymentId !== null && $yookassaPaymentId !== '') {
+            $message .= "\nЮKassa: {$yookassaPaymentId}";
+        }
+
+        if ($adFreeUntil !== null && $adFreeUntil !== '') {
+            $message .= "\nБез рекламы до: {$adFreeUntil}";
+        }
+
+        return $this->sendMessage($message);
+    }
+
     /**
      * Отправить сообщение в Telegram
      *

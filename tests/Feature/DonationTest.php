@@ -6,8 +6,10 @@ use App\Enums\Donation\PaymentStatus;
 use App\Models\DonationPayment;
 use App\Models\User;
 use App\Services\DonationPaymentService;
+use App\Services\TelegramNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Mockery;
 use Tests\TestCase;
 
 class DonationTest extends TestCase
@@ -42,11 +44,38 @@ class DonationTest extends TestCase
             'status' => PaymentStatus::Pending,
         ]);
 
+        $this->instance(
+            TelegramNotificationService::class,
+            Mockery::mock(TelegramNotificationService::class, function ($mock) use ($uuid): void {
+                $mock->shouldReceive('sendDonationPaymentNotification')
+                    ->once()
+                    ->withArgs(function (
+                        int $amount,
+                        int $months,
+                        string $userUuid,
+                        ?string $paymentMethodType,
+                        ?string $yookassaPaymentId,
+                        ?string $adFreeUntil,
+                    ) use ($uuid): bool {
+                        return $amount === 300
+                            && $months === 3
+                            && $userUuid === $uuid
+                            && $paymentMethodType === 'sbp'
+                            && $yookassaPaymentId === 'yk-test-payment-id'
+                            && $adFreeUntil !== null;
+                    })
+                    ->andReturn(true);
+            }),
+        );
+
         $response = $this->postJson('/api/yookassa/webhook', [
             'event' => 'payment.succeeded',
             'object' => [
                 'id' => 'yk-test-payment-id',
                 'status' => 'succeeded',
+                'payment_method' => [
+                    'type' => 'sbp',
+                ],
                 'metadata' => [
                     'donation_payment_uuid' => $payment->uuid,
                     'user_uuid' => $uuid,
@@ -76,7 +105,7 @@ class DonationTest extends TestCase
                 ->andReturn([
                     'payment_uuid' => 'pay-uuid',
                     'confirmation_url' => 'https://yoomoney.ru/pay',
-                    'amount' => 1,
+                    'amount' => 120,
                     'months' => 1,
                     'status' => 'pending',
                 ]);
@@ -90,7 +119,7 @@ class DonationTest extends TestCase
         $response->assertStatus(201)
             ->assertJson([
                 'confirmation_url' => 'https://yoomoney.ru/pay',
-                'amount' => 1,
+                'amount' => 120,
                 'months' => 1,
             ]);
     }
