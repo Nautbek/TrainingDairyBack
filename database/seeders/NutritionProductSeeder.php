@@ -281,11 +281,35 @@ class NutritionProductSeeder extends Seeder
             ]),
         ];
 
+        $products = $this->deduplicateProducts($products);
+
         foreach ($products as $product) {
-            Product::query()->firstOrCreate(
-                ['name' => $product['name'], 'status' => $product['status']],
-                [...$product, 'uuid' => (string) Str::uuid()],
-            );
+            $existing = Product::query()
+                ->where('status', $product['status'])
+                ->whereRaw(
+                    "LOWER(REPLACE(name, 'ё', 'е')) = ?",
+                    [$this->normalizeProductName($product['name'])]
+                )
+                ->first();
+
+            if ($existing !== null) {
+                $existing->update([
+                    'description' => $product['description'],
+                    'proteins' => $product['proteins'],
+                    'fats' => $product['fats'],
+                    'carbs' => $product['carbs'],
+                    'calories' => $product['calories'],
+                    'author_uuid' => self::AUTHOR_UUID,
+                ]);
+
+                continue;
+            }
+
+            Product::query()->create([
+                ...$product,
+                'author_uuid' => self::AUTHOR_UUID,
+                'uuid' => (string) Str::uuid(),
+            ]);
         }
     }
 
@@ -316,5 +340,32 @@ class NutritionProductSeeder extends Seeder
             'author_uuid' => self::AUTHOR_UUID,
             'status' => $status,
         ], $items);
+    }
+
+    /**
+     * @param  list<array{name: string, description: string, proteins: float, fats: float, carbs: float, calories: float, author_uuid: string, status: ProductStatus}>  $products
+     * @return list<array{name: string, description: string, proteins: float, fats: float, carbs: float, calories: float, author_uuid: string, status: ProductStatus}>
+     */
+    private function deduplicateProducts(array $products): array
+    {
+        $unique = [];
+
+        foreach ($products as $product) {
+            $key = $product['status']->value.'|'.$this->normalizeProductName($product['name']);
+
+            if (! array_key_exists($key, $unique)) {
+                $unique[$key] = $product;
+            }
+        }
+
+        return array_values($unique);
+    }
+
+    private function normalizeProductName(string $name): string
+    {
+        $normalized = trim(mb_strtolower($name));
+        $normalized = str_replace('ё', 'е', $normalized);
+
+        return preg_replace('/\s+/u', ' ', $normalized) ?? $normalized;
     }
 }
