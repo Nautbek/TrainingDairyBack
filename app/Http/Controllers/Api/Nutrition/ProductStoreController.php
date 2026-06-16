@@ -31,6 +31,7 @@ class ProductStoreController extends Controller
             $product = Product::query()->create([
                 'uuid' => $productUuid,
                 'name' => $validated['name'],
+                'barcode' => $validated['barcode'] ?? null,
                 'description' => $validated['description'] ?? null,
                 'proteins' => $validated['proteins'],
                 'fats' => $validated['fats'],

@@ -7,11 +7,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $uuid
  * @property string $name
+ * @property string|null $barcode
  * @property string|null $description
  * @property float $proteins
  * @property float $fats
@@ -19,8 +21,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float $calories
  * @property string $author_uuid
  * @property ProductStatus $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Product extends Model
 {
@@ -29,6 +31,7 @@ class Product extends Model
     protected $fillable = [
         'uuid',
         'name',
+        'barcode',
         'description',
         'proteins',
         'fats',

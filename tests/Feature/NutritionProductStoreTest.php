@@ -18,6 +18,7 @@ class NutritionProductStoreTest extends TestCase
         $response = $this->postJson('/api/nutrition/products', [
             'uuid' => $uuid,
             'name' => 'Овсянка',
+            'barcode' => '4601234567890',
             'description' => 'Геркулес',
             'proteins' => 12.3,
             'fats' => 6.1,
@@ -33,6 +34,7 @@ class NutritionProductStoreTest extends TestCase
 
         $this->assertDatabaseHas('nutrition_products', [
             'name' => 'Овсянка',
+            'barcode' => '4601234567890',
             'uuid' => $response->json('uuid'),
             'author_uuid' => $uuid,
             'status' => ProductStatus::Draft->value,
