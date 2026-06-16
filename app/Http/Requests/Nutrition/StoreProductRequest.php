@@ -17,6 +17,11 @@ class StoreProductRequest extends FormRequest
         if ($this->header('X-User-UUID') && ! $this->has('uuid')) {
             $this->merge(['uuid' => $this->header('X-User-UUID')]);
         }
+
+        if ($this->has('barcode')) {
+            $barcode = preg_replace('/\D+/', '', (string) $this->input('barcode'));
+            $this->merge(['barcode' => $barcode !== '' ? $barcode : null]);
+        }
     }
 
     /**

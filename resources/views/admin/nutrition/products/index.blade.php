@@ -323,7 +323,11 @@
                                 Б {{ $product->proteins }} · Ж {{ $product->fats }} · У {{ $product->carbs }} · {{ $product->calories }} ккал
                             </div>
                             <div class="product-meta">
-                                #{{ $product->id }} · {{ $product->author_uuid }} · {{ $product->created_at?->format('d.m.Y H:i') }}
+                                #{{ $product->id }}
+                                @if ($product->barcode)
+                                    · штрихкод: {{ $product->barcode }}
+                                @endif
+                                · {{ $product->author_uuid }} · {{ $product->created_at?->format('d.m.Y H:i') }}
                             </div>
                         </div>
 

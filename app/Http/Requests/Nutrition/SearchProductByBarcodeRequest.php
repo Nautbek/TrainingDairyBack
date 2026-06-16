@@ -12,6 +12,14 @@ class SearchProductByBarcodeRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('barcode')) {
+            $barcode = preg_replace('/\D+/', '', (string) $this->input('barcode'));
+            $this->merge(['barcode' => $barcode]);
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
