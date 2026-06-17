@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Donation;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,12 +21,13 @@ class CreateDonationRequest extends FormRequest
     }
 
     /**
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'uuid' => ['required', 'uuid'],
+            'app' => ['nullable', 'string', 'max:40'],
             'tier' => ['required', 'integer', Rule::in(array_keys(config('donations.tiers')))],
             'payment_method' => ['sometimes', 'string', Rule::in(['sbp'])],
         ];

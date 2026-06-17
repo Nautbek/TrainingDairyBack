@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class TelegramNotificationService
 {
     private string $apiUrl;
+
     private int $chatId;
 
     public function __construct()
@@ -18,10 +19,6 @@ class TelegramNotificationService
 
     /**
      * Отправить уведомление о новом отзыве
-     *
-     * @param string $app
-     * @param string $text
-     * @return bool
      */
     public function sendFeedbackNotification(string $app, string $text): bool
     {
@@ -37,11 +34,16 @@ class TelegramNotificationService
         ?string $paymentMethodType = null,
         ?string $yookassaPaymentId = null,
         ?string $adFreeUntil = null,
+        ?string $app = null,
     ): bool {
         $method = $paymentMethodType ?: 'не указан';
         $message = "Оплата подписки: {$amount} ₽, {$months} мес.\n"
             ."Пользователь: {$userUuid}\n"
             ."Способ: {$method}";
+
+        if ($app !== null && $app !== '') {
+            $message .= "\nПриложение: {$app}";
+        }
 
         if ($yookassaPaymentId !== null && $yookassaPaymentId !== '') {
             $message .= "\nЮKassa: {$yookassaPaymentId}";
@@ -56,14 +58,12 @@ class TelegramNotificationService
 
     /**
      * Отправить сообщение в Telegram
-     *
-     * @param string $message
-     * @return bool
      */
     private function sendMessage(string $message): bool
     {
         if (empty($this->apiUrl) || empty($this->chatId)) {
             Log::warning('Telegram configuration is missing');
+
             return false;
         }
 
@@ -74,7 +74,7 @@ class TelegramNotificationService
             ]);
 
             if ($response->successful()) {
-//                return true;
+                //                return true;
             }
 
             try {
@@ -86,11 +86,14 @@ class TelegramNotificationService
             } catch (\Exception $exception) {
 
             }
+
             return true;
-            Log::error('Telegram API error: ' . $response->body());
+            Log::error('Telegram API error: '.$response->body());
+
             return false;
         } catch (\Exception $e) {
-            Log::error('Error sending Telegram message: ' . $e->getMessage());
+            Log::error('Error sending Telegram message: '.$e->getMessage());
+
             return false;
         }
     }

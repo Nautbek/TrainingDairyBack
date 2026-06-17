@@ -8,8 +8,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use YooKassa\Model\Notification\NotificationEventType;
+use YooKassa\Model\Payment\Confirmation\AbstractConfirmation;
 use YooKassa\Model\Payment\Confirmation\ConfirmationMobileApplication;
 use YooKassa\Model\Payment\Confirmation\ConfirmationRedirect;
+use YooKassa\Model\Payment\PaymentInterface;
 use YooKassa\Model\Payment\PaymentStatus as YooKassaPaymentStatus;
 
 class DonationPaymentService
@@ -18,6 +20,7 @@ class DonationPaymentService
         private readonly YooKassaService $yooKassaService,
         private readonly AdFreeSubscriptionService $adFreeSubscriptionService,
         private readonly TelegramNotificationService $telegramNotificationService,
+        private readonly DonationAppResolver $donationAppResolver,
     ) {}
 
     /**
@@ -32,7 +35,7 @@ class DonationPaymentService
      *     ad_free_until?: string|null
      * }
      */
-    public function createPaymentWithToken(string $userUuid, int $tierAmount, string $paymentToken): array
+    public function createPaymentWithToken(string $userUuid, int $tierAmount, string $paymentToken, ?string $app = null): array
     {
         $tier = config("donations.tiers.{$tierAmount}");
 
@@ -47,6 +50,7 @@ class DonationPaymentService
         $payment = DonationPayment::query()->create([
             'uuid' => $paymentUuid,
             'user_uuid' => $userUuid,
+            'app' => $this->donationAppResolver->resolve($app, $userUuid),
             'amount' => $tier['amount'],
             'months' => $tier['months'],
             'status' => PaymentStatus::Pending,
@@ -75,7 +79,7 @@ class DonationPaymentService
     /**
      * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string}
      */
-    public function createPayment(string $userUuid, int $tierAmount): array
+    public function createPayment(string $userUuid, int $tierAmount, ?string $app = null): array
     {
         $tier = config("donations.tiers.{$tierAmount}");
 
@@ -90,6 +94,7 @@ class DonationPaymentService
         $payment = DonationPayment::query()->create([
             'uuid' => $paymentUuid,
             'user_uuid' => $userUuid,
+            'app' => $this->donationAppResolver->resolve($app, $userUuid),
             'amount' => $tier['amount'],
             'months' => $tier['months'],
             'status' => PaymentStatus::Pending,
@@ -109,7 +114,7 @@ class DonationPaymentService
      *
      * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string, confirmation_type?: string|null, payment_method_type?: string}
      */
-    public function createSbpPayment(string $userUuid, int $tierAmount): array
+    public function createSbpPayment(string $userUuid, int $tierAmount, ?string $app = null): array
     {
         $tier = config("donations.tiers.{$tierAmount}");
 
@@ -124,6 +129,7 @@ class DonationPaymentService
         $payment = DonationPayment::query()->create([
             'uuid' => $paymentUuid,
             'user_uuid' => $userUuid,
+            'app' => $this->donationAppResolver->resolve($app, $userUuid),
             'amount' => $tier['amount'],
             'months' => $tier['months'],
             'status' => PaymentStatus::Pending,
@@ -223,6 +229,7 @@ class DonationPaymentService
             $paymentMethodType,
             is_string($yookassaPaymentId) ? $yookassaPaymentId : null,
             $adFreeUntil,
+            $payment->app,
         );
     }
 
@@ -278,7 +285,7 @@ class DonationPaymentService
     private function buildTokenPaymentResponse(
         DonationPayment $payment,
         ?User $user,
-        ?\YooKassa\Model\Payment\PaymentInterface $yooKassaPayment = null,
+        ?PaymentInterface $yooKassaPayment = null,
     ): array {
         $response = [
             'payment_uuid' => $payment->uuid,
@@ -318,7 +325,7 @@ class DonationPaymentService
     }
 
     private function resolveConfirmationUrl(
-        \YooKassa\Model\Payment\Confirmation\AbstractConfirmation $confirmation,
+        AbstractConfirmation $confirmation,
     ): ?string {
         if ($confirmation instanceof ConfirmationRedirect
             || $confirmation instanceof ConfirmationMobileApplication) {
@@ -341,7 +348,7 @@ class DonationPaymentService
      */
     private function buildRedirectPaymentResponse(
         DonationPayment $payment,
-        \YooKassa\Model\Payment\PaymentInterface $yooKassaPayment,
+        PaymentInterface $yooKassaPayment,
         ?string $paymentMethodType = null,
     ): array {
         $confirmation = $yooKassaPayment->getConfirmation();

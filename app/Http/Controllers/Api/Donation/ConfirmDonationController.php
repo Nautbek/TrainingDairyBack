@@ -26,6 +26,7 @@ class ConfirmDonationController extends Controller
                 $validated['uuid'],
                 (int) $validated['tier'],
                 $validated['payment_token'],
+                $validated['app'] ?? null,
             );
 
             return response()->json($payment, 201);

@@ -40,11 +40,7 @@ class YooKassaService
                 'return_url' => (string) config('services.yookassa.return_url'),
             ],
             'description' => "Поддержка приложения — {$payment->months} мес. без рекламы",
-            'metadata' => [
-                'donation_payment_uuid' => $payment->uuid,
-                'user_uuid' => $payment->user_uuid,
-                'months' => (string) $payment->months,
-            ],
+            'metadata' => $this->donationMetadata($payment),
         ];
 
         return $this->createPayment($payload, $idempotenceKey);
@@ -63,11 +59,7 @@ class YooKassaService
             'capture' => true,
             'payment_token' => $paymentToken,
             'description' => "Поддержка приложения — {$payment->months} мес. без рекламы",
-            'metadata' => [
-                'donation_payment_uuid' => $payment->uuid,
-                'user_uuid' => $payment->user_uuid,
-                'months' => (string) $payment->months,
-            ],
+            'metadata' => $this->donationMetadata($payment),
         ];
 
         return $this->createPayment($payload, $idempotenceKey);
@@ -89,11 +81,7 @@ class YooKassaService
                 'return_url' => (string) config('services.yookassa.return_url'),
             ],
             'description' => "Поддержка приложения — {$payment->months} мес. без рекламы",
-            'metadata' => [
-                'donation_payment_uuid' => $payment->uuid,
-                'user_uuid' => $payment->user_uuid,
-                'months' => (string) $payment->months,
-            ],
+            'metadata' => $this->donationMetadata($payment),
         ];
 
         return $this->createPayment($payload, $idempotenceKey);
@@ -111,6 +99,24 @@ class YooKassaService
                 $e,
             );
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function donationMetadata(DonationPayment $payment): array
+    {
+        $metadata = [
+            'donation_payment_uuid' => $payment->uuid,
+            'user_uuid' => $payment->user_uuid,
+            'months' => (string) $payment->months,
+        ];
+
+        if ($payment->app !== null && $payment->app !== '') {
+            $metadata['app'] = $payment->app;
+        }
+
+        return $metadata;
     }
 
     /**

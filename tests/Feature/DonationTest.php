@@ -38,6 +38,7 @@ class DonationTest extends TestCase
         $payment = DonationPayment::query()->create([
             'uuid' => (string) Str::uuid(),
             'user_uuid' => $uuid,
+            'app' => 'nutrition_diary',
             'yookassa_payment_id' => 'yk-test-payment-id',
             'amount' => 300,
             'months' => 3,
@@ -56,13 +57,15 @@ class DonationTest extends TestCase
                         ?string $paymentMethodType,
                         ?string $yookassaPaymentId,
                         ?string $adFreeUntil,
+                        ?string $app,
                     ) use ($uuid): bool {
                         return $amount === 300
                             && $months === 3
                             && $userUuid === $uuid
                             && $paymentMethodType === 'sbp'
                             && $yookassaPaymentId === 'yk-test-payment-id'
-                            && $adFreeUntil !== null;
+                            && $adFreeUntil !== null
+                            && $app === 'nutrition_diary';
                     })
                     ->andReturn(true);
             }),
@@ -101,7 +104,7 @@ class DonationTest extends TestCase
         $this->mock(DonationPaymentService::class, function ($mock): void {
             $mock->shouldReceive('createPayment')
                 ->once()
-                ->withArgs(fn (string $userUuid, int $tier): bool => $tier === 1)
+                ->withArgs(fn (string $userUuid, int $tier, ?string $app): bool => $tier === 1 && $app === null)
                 ->andReturn([
                     'payment_uuid' => 'pay-uuid',
                     'confirmation_url' => 'https://yoomoney.ru/pay',

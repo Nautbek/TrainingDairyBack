@@ -23,8 +23,8 @@ class CreateDonationController extends Controller
             }
 
             $payment = ($validated['payment_method'] ?? null) === 'sbp'
-                ? $donationPaymentService->createSbpPayment($validated['uuid'], (int) $validated['tier'])
-                : $donationPaymentService->createPayment($validated['uuid'], (int) $validated['tier']);
+                ? $donationPaymentService->createSbpPayment($validated['uuid'], (int) $validated['tier'], $validated['app'] ?? null)
+                : $donationPaymentService->createPayment($validated['uuid'], (int) $validated['tier'], $validated['app'] ?? null);
 
             return response()->json($payment, 201);
         } catch (InvalidArgumentException $e) {
