@@ -11,8 +11,10 @@ use App\Http\Controllers\Api\Nutrition\ProductStoreController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\TripSplit\ConfirmTripSplitPaymentController;
 use App\Http\Controllers\Api\TripSplit\CreateTripSplitPaymentController;
+use App\Http\Controllers\Api\TripSplit\SettleTripController;
 use App\Http\Controllers\Api\TripSplit\TripSplitCreditsController;
 use App\Http\Controllers\Api\TripSplit\TripSplitPaymentStatusController;
+use App\Http\Controllers\Api\TripSplit\TripSplitSettlementPdfController;
 use App\Http\Controllers\Api\UserFeedbackController;
 use App\Http\Controllers\Api\UserOpenController;
 use Illuminate\Support\Facades\Route;
@@ -40,3 +42,5 @@ Route::post('/tripsplit/payments/create', CreateTripSplitPaymentController::clas
 Route::post('/tripsplit/payments/confirm', ConfirmTripSplitPaymentController::class);
 Route::get('/tripsplit/payments/{paymentUuid}/status', TripSplitPaymentStatusController::class);
 Route::get('/tripsplit/credits', TripSplitCreditsController::class);
+Route::post('/tripsplit/settle', SettleTripController::class);
+Route::get('/tripsplit/settlements/{settlementUuid}/pdf', TripSplitSettlementPdfController::class);
