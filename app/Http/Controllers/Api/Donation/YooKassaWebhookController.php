@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Api\Donation;
 
 use App\Http\Controllers\Controller;
+use App\Models\DonationPayment;
 use App\Services\DonationPaymentService;
+use App\Services\TripSplitPaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class YooKassaWebhookController extends Controller
 {
-    public function __invoke(Request $request, DonationPaymentService $donationPaymentService): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        DonationPaymentService $donationPaymentService,
+        TripSplitPaymentService $tripSplitPaymentService,
+    ): JsonResponse {
         Log::info('YooKassa webhook received', [
             'ip' => $request->ip(),
             'method' => $request->method(),
@@ -21,7 +26,17 @@ class YooKassaWebhookController extends Controller
         ]);
 
         try {
-            $donationPaymentService->handleWebhook($request->all());
+            $payload = $request->all();
+            $object = $payload['object'] ?? null;
+            $payment = is_array($object)
+                ? DonationPayment::resolveFromYooKassaObject($object)
+                : null;
+
+            if (TripSplitPaymentService::isTripSplitPayment($payment)) {
+                $tripSplitPaymentService->handleWebhook($payload);
+            } else {
+                $donationPaymentService->handleWebhook($payload);
+            }
 
             return response()->json(['status' => 'Ok']);
         } catch (\Exception $e) {

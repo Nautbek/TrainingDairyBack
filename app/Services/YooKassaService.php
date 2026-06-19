@@ -87,6 +87,66 @@ class YooKassaService
         return $this->createPayment($payload, $idempotenceKey);
     }
 
+    public function createTripSplitPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
+    {
+        $payload = [
+            'amount' => [
+                'value' => number_format($payment->amount, 2, '.', ''),
+                'currency' => CurrencyCode::RUB,
+            ],
+            'capture' => true,
+            'confirmation' => [
+                'type' => ConfirmationType::REDIRECT,
+                'return_url' => (string) config('services.yookassa.return_url'),
+            ],
+            'description' => "TripSplit — {$payment->months} подсчёт(ов) итогов",
+            'metadata' => $this->tripSplitMetadata($payment),
+        ];
+
+        return $this->createPayment($payload, $idempotenceKey);
+    }
+
+    public function createTripSplitPaymentWithToken(
+        DonationPayment $payment,
+        string $paymentToken,
+        string $idempotenceKey,
+    ): CreatePaymentResponse {
+        $payload = [
+            'amount' => [
+                'value' => number_format($payment->amount, 2, '.', ''),
+                'currency' => CurrencyCode::RUB,
+            ],
+            'capture' => true,
+            'payment_token' => $paymentToken,
+            'description' => "TripSplit — {$payment->months} подсчёт(ов) итогов",
+            'metadata' => $this->tripSplitMetadata($payment),
+        ];
+
+        return $this->createPayment($payload, $idempotenceKey);
+    }
+
+    public function createTripSplitSbpPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
+    {
+        $payload = [
+            'amount' => [
+                'value' => number_format($payment->amount, 2, '.', ''),
+                'currency' => CurrencyCode::RUB,
+            ],
+            'capture' => true,
+            'payment_method_data' => [
+                'type' => 'sbp',
+            ],
+            'confirmation' => [
+                'type' => ConfirmationType::REDIRECT,
+                'return_url' => (string) config('services.yookassa.return_url'),
+            ],
+            'description' => "TripSplit — {$payment->months} подсчёт(ов) итогов",
+            'metadata' => $this->tripSplitMetadata($payment),
+        ];
+
+        return $this->createPayment($payload, $idempotenceKey);
+    }
+
     public function getPayment(string $yookassaPaymentId): ?PaymentInterface
     {
         $path = self::PAYMENTS_PATH.'/'.$yookassaPaymentId;
@@ -117,6 +177,19 @@ class YooKassaService
         }
 
         return $metadata;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function tripSplitMetadata(DonationPayment $payment): array
+    {
+        return [
+            'donation_payment_uuid' => $payment->uuid,
+            'user_uuid' => $payment->user_uuid,
+            'credits' => (string) $payment->months,
+            'app' => (string) config('tripsplit.app'),
+        ];
     }
 
     /**

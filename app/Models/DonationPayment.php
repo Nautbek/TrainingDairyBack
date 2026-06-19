@@ -47,4 +47,27 @@ class DonationPayment extends Model
     {
         return $this->belongsTo(User::class, 'user_uuid', 'uuid');
     }
+
+    /**
+     * @param  array<string, mixed>  $paymentObject
+     */
+    public static function resolveFromYooKassaObject(array $paymentObject): ?self
+    {
+        $yookassaPaymentId = $paymentObject['id'] ?? null;
+        $metadata = $paymentObject['metadata'] ?? [];
+        $paymentUuid = is_array($metadata) ? ($metadata['donation_payment_uuid'] ?? null) : null;
+
+        if (is_string($yookassaPaymentId)) {
+            $payment = static::query()->where('yookassa_payment_id', $yookassaPaymentId)->first();
+            if ($payment !== null) {
+                return $payment;
+            }
+        }
+
+        if (is_string($paymentUuid)) {
+            return static::query()->where('uuid', $paymentUuid)->first();
+        }
+
+        return null;
+    }
 }

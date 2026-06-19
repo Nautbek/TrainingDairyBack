@@ -56,6 +56,30 @@ class TelegramNotificationService
         return $this->sendMessage($message);
     }
 
+    public function sendTripSplitPaymentNotification(
+        int $amount,
+        int $credits,
+        string $userUuid,
+        ?string $paymentMethodType = null,
+        ?string $yookassaPaymentId = null,
+        ?int $usageCount = null,
+    ): bool {
+        $method = $paymentMethodType ?: 'не указан';
+        $message = "TripSplit оплата: {$amount} ₽, {$credits} подсчёт(ов)\n"
+            ."Пользователь: {$userUuid}\n"
+            ."Способ: {$method}";
+
+        if ($yookassaPaymentId !== null && $yookassaPaymentId !== '') {
+            $message .= "\nЮKassa: {$yookassaPaymentId}";
+        }
+
+        if ($usageCount !== null) {
+            $message .= "\nБаланс: {$usageCount}";
+        }
+
+        return $this->sendMessage($message);
+    }
+
     /**
      * Отправить сообщение в Telegram
      */

@@ -14,13 +14,12 @@ use YooKassa\Model\Payment\Confirmation\ConfirmationRedirect;
 use YooKassa\Model\Payment\PaymentInterface;
 use YooKassa\Model\Payment\PaymentStatus as YooKassaPaymentStatus;
 
-class DonationPaymentService
+class TripSplitPaymentService
 {
     public function __construct(
         private readonly YooKassaService $yooKassaService,
-        private readonly AdFreeSubscriptionService $adFreeSubscriptionService,
+        private readonly TripSplitCreditsService $tripSplitCreditsService,
         private readonly TelegramNotificationService $telegramNotificationService,
-        private readonly DonationAppResolver $donationAppResolver,
     ) {}
 
     /**
@@ -28,38 +27,22 @@ class DonationPaymentService
      *     payment_uuid: string,
      *     status: string,
      *     amount: int,
-     *     months: int,
+     *     credits: int,
      *     confirmation_url?: string|null,
      *     confirmation_type?: string|null,
      *     payment_method_type?: string|null,
-     *     ad_free_until?: string|null
+     *     usage_count?: int
      * }
      */
-    public function createPaymentWithToken(string $userUuid, int $tierAmount, string $paymentToken, ?string $app = null): array
+    public function createPaymentWithToken(string $userUuid, int $tierKey, string $paymentToken): array
     {
-        $tier = config("donations.tiers.{$tierAmount}");
+        $tier = $this->resolveTier($tierKey);
+        $payment = $this->createPendingPayment($userUuid, $tier);
 
-        if ($tier === null) {
-            throw new \InvalidArgumentException('Invalid donation tier');
-        }
-
-        do {
-            $paymentUuid = (string) Str::uuid();
-        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
-
-        $payment = DonationPayment::query()->create([
-            'uuid' => $paymentUuid,
-            'user_uuid' => $userUuid,
-            'app' => $this->donationAppResolver->resolve($app, $userUuid),
-            'amount' => $tier['amount'],
-            'months' => $tier['months'],
-            'status' => PaymentStatus::Pending,
-        ]);
-
-        $yooKassaPayment = $this->yooKassaService->createDonationPaymentWithToken(
+        $yooKassaPayment = $this->yooKassaService->createTripSplitPaymentWithToken(
             $payment,
             $paymentToken,
-            $paymentUuid,
+            $payment->uuid,
         );
 
         $payment->update([
@@ -77,30 +60,22 @@ class DonationPaymentService
     }
 
     /**
-     * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string}
+     * @return array{
+     *     payment_uuid: string,
+     *     confirmation_url: string|null,
+     *     amount: int,
+     *     credits: int,
+     *     status: string,
+     *     confirmation_type?: string|null,
+     *     payment_method_type?: string|null
+     * }
      */
-    public function createPayment(string $userUuid, int $tierAmount, ?string $app = null): array
+    public function createPayment(string $userUuid, int $tierKey): array
     {
-        $tier = config("donations.tiers.{$tierAmount}");
+        $tier = $this->resolveTier($tierKey);
+        $payment = $this->createPendingPayment($userUuid, $tier);
 
-        if ($tier === null) {
-            throw new \InvalidArgumentException('Invalid donation tier');
-        }
-
-        do {
-            $paymentUuid = (string) Str::uuid();
-        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
-
-        $payment = DonationPayment::query()->create([
-            'uuid' => $paymentUuid,
-            'user_uuid' => $userUuid,
-            'app' => $this->donationAppResolver->resolve($app, $userUuid),
-            'amount' => $tier['amount'],
-            'months' => $tier['months'],
-            'status' => PaymentStatus::Pending,
-        ]);
-
-        $yooKassaPayment = $this->yooKassaService->createDonationPayment($payment, $paymentUuid);
+        $yooKassaPayment = $this->yooKassaService->createTripSplitPayment($payment, $payment->uuid);
 
         $payment->update([
             'yookassa_payment_id' => $yooKassaPayment->getId(),
@@ -110,32 +85,22 @@ class DonationPaymentService
     }
 
     /**
-     * СБП через redirect (без payment_token) — у части магазинов токен SDK для СБП не принимается.
-     *
-     * @return array{payment_uuid: string, confirmation_url: string, amount: int, months: int, status: string, confirmation_type?: string|null, payment_method_type?: string}
+     * @return array{
+     *     payment_uuid: string,
+     *     confirmation_url: string|null,
+     *     amount: int,
+     *     credits: int,
+     *     status: string,
+     *     confirmation_type?: string|null,
+     *     payment_method_type?: string
+     * }
      */
-    public function createSbpPayment(string $userUuid, int $tierAmount, ?string $app = null): array
+    public function createSbpPayment(string $userUuid, int $tierKey): array
     {
-        $tier = config("donations.tiers.{$tierAmount}");
+        $tier = $this->resolveTier($tierKey);
+        $payment = $this->createPendingPayment($userUuid, $tier);
 
-        if ($tier === null) {
-            throw new \InvalidArgumentException('Invalid donation tier');
-        }
-
-        do {
-            $paymentUuid = (string) Str::uuid();
-        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
-
-        $payment = DonationPayment::query()->create([
-            'uuid' => $paymentUuid,
-            'user_uuid' => $userUuid,
-            'app' => $this->donationAppResolver->resolve($app, $userUuid),
-            'amount' => $tier['amount'],
-            'months' => $tier['months'],
-            'status' => PaymentStatus::Pending,
-        ]);
-
-        $yooKassaPayment = $this->yooKassaService->createDonationSbpPayment($payment, $paymentUuid);
+        $yooKassaPayment = $this->yooKassaService->createTripSplitSbpPayment($payment, $payment->uuid);
 
         $payment->update([
             'yookassa_payment_id' => $yooKassaPayment->getId(),
@@ -187,6 +152,44 @@ class DonationPaymentService
         return $payment->fresh();
     }
 
+    public static function isTripSplitPayment(?DonationPayment $payment): bool
+    {
+        return $payment !== null && $payment->app === (string) config('tripsplit.app');
+    }
+
+    /**
+     * @return array{amount: int, credits: int, label: string}
+     */
+    private function resolveTier(int $tierKey): array
+    {
+        $tier = config("tripsplit.tiers.{$tierKey}");
+
+        if ($tier === null) {
+            throw new \InvalidArgumentException('Invalid TripSplit payment tier');
+        }
+
+        return $tier;
+    }
+
+    /**
+     * @param  array{amount: int, credits: int, label: string}  $tier
+     */
+    private function createPendingPayment(string $userUuid, array $tier): DonationPayment
+    {
+        do {
+            $paymentUuid = (string) Str::uuid();
+        } while (DonationPayment::query()->where('uuid', $paymentUuid)->exists());
+
+        return DonationPayment::query()->create([
+            'uuid' => $paymentUuid,
+            'user_uuid' => $userUuid,
+            'app' => (string) config('tripsplit.app'),
+            'amount' => $tier['amount'],
+            'months' => $tier['credits'],
+            'status' => PaymentStatus::Pending,
+        ]);
+    }
+
     /**
      * @param  array<string, mixed>  $paymentObject
      */
@@ -194,7 +197,7 @@ class DonationPaymentService
     {
         $payment = DonationPayment::resolveFromYooKassaObject($paymentObject);
 
-        if ($payment === null || TripSplitPaymentService::isTripSplitPayment($payment)) {
+        if (! self::isTripSplitPayment($payment)) {
             return;
         }
 
@@ -220,16 +223,15 @@ class DonationPaymentService
         }
 
         $yookassaPaymentId = $paymentObject['id'] ?? $payment->yookassa_payment_id;
-        $adFreeUntil = $user?->ad_free_until?->timezone(config('app.timezone'))->format('d.m.Y H:i');
+        $usageCount = $user !== null ? $this->tripSplitCreditsService->getCountForUser($user) : 0;
 
-        $this->telegramNotificationService->sendDonationPaymentNotification(
+        $this->telegramNotificationService->sendTripSplitPaymentNotification(
             $payment->amount,
             $payment->months,
             $payment->user_uuid,
             $paymentMethodType,
             is_string($yookassaPaymentId) ? $yookassaPaymentId : null,
-            $adFreeUntil,
-            $payment->app,
+            $usageCount,
         );
     }
 
@@ -240,11 +242,39 @@ class DonationPaymentService
     {
         $payment = DonationPayment::resolveFromYooKassaObject($paymentObject);
 
-        if ($payment === null || TripSplitPaymentService::isTripSplitPayment($payment)) {
+        if (! self::isTripSplitPayment($payment) || $payment->status === PaymentStatus::Succeeded) {
             return;
         }
 
         $payment->update(['status' => PaymentStatus::Canceled]);
+    }
+
+    private function applySucceeded(DonationPayment $payment): void
+    {
+        if ($payment->status === PaymentStatus::Succeeded) {
+            return;
+        }
+
+        DB::transaction(function () use ($payment): void {
+            $payment->refresh();
+
+            if ($payment->status === PaymentStatus::Succeeded) {
+                return;
+            }
+
+            $user = User::query()->where('uuid', $payment->user_uuid)->first();
+
+            if ($user === null) {
+                return;
+            }
+
+            $this->tripSplitCreditsService->grant($user, $payment->months);
+
+            $payment->update([
+                'status' => PaymentStatus::Succeeded,
+                'paid_at' => now(),
+            ]);
+        });
     }
 
     /**
@@ -252,11 +282,11 @@ class DonationPaymentService
      *     payment_uuid: string,
      *     status: string,
      *     amount: int,
-     *     months: int,
+     *     credits: int,
      *     confirmation_url?: string|null,
      *     confirmation_type?: string|null,
      *     payment_method_type?: string|null,
-     *     ad_free_until?: string|null
+     *     usage_count?: int
      * }
      */
     private function buildTokenPaymentResponse(
@@ -268,11 +298,11 @@ class DonationPaymentService
             'payment_uuid' => $payment->uuid,
             'status' => $payment->status->value,
             'amount' => $payment->amount,
-            'months' => $payment->months,
+            'credits' => $payment->months,
         ];
 
-        if ($payment->status === PaymentStatus::Succeeded && $user?->ad_free_until !== null) {
-            $response['ad_free_until'] = $user->ad_free_until->toIso8601String();
+        if ($payment->status === PaymentStatus::Succeeded && $user !== null) {
+            $response['usage_count'] = $this->tripSplitCreditsService->getCountForUser($user);
 
             return $response;
         }
@@ -301,23 +331,12 @@ class DonationPaymentService
         return $response;
     }
 
-    private function resolveConfirmationUrl(
-        AbstractConfirmation $confirmation,
-    ): ?string {
-        if ($confirmation instanceof ConfirmationRedirect
-            || $confirmation instanceof ConfirmationMobileApplication) {
-            return $confirmation->getConfirmationUrl();
-        }
-
-        return null;
-    }
-
     /**
      * @return array{
      *     payment_uuid: string,
      *     confirmation_url: string|null,
      *     amount: int,
-     *     months: int,
+     *     credits: int,
      *     status: string,
      *     confirmation_type?: string|null,
      *     payment_method_type?: string|null
@@ -333,7 +352,7 @@ class DonationPaymentService
             'payment_uuid' => $payment->uuid,
             'confirmation_url' => $confirmation !== null ? $this->resolveConfirmationUrl($confirmation) : null,
             'amount' => $payment->amount,
-            'months' => $payment->months,
+            'credits' => $payment->months,
             'status' => $yooKassaPayment->getStatus(),
         ];
 
@@ -349,31 +368,13 @@ class DonationPaymentService
         return $response;
     }
 
-    private function applySucceeded(DonationPayment $payment): void
+    private function resolveConfirmationUrl(AbstractConfirmation $confirmation): ?string
     {
-        if ($payment->status === PaymentStatus::Succeeded) {
-            return;
+        if ($confirmation instanceof ConfirmationRedirect
+            || $confirmation instanceof ConfirmationMobileApplication) {
+            return $confirmation->getConfirmationUrl();
         }
 
-        DB::transaction(function () use ($payment): void {
-            $payment->refresh();
-
-            if ($payment->status === PaymentStatus::Succeeded) {
-                return;
-            }
-
-            $user = User::query()->where('uuid', $payment->user_uuid)->first();
-
-            if ($user === null) {
-                return;
-            }
-
-            $this->adFreeSubscriptionService->extend($user, $payment->months);
-
-            $payment->update([
-                'status' => PaymentStatus::Succeeded,
-                'paid_at' => now(),
-            ]);
-        });
+        return null;
     }
 }
