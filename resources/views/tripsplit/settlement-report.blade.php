@@ -39,7 +39,41 @@
         </tbody>
     </table>
 
-    <h2>Кто кому переводит</h2>
+    <h2>Детализация по валютам</h2>
+    @foreach ($summary['participants'] ?? [] as $participant)
+        <p><strong>{{ $participant['name'] }}</strong></p>
+        <table>
+            <thead>
+                <tr><th>Вложил</th><th>Услуги (доли)</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        @forelse ($participant['paid_by_currency'] ?? [] as $code => $amount)
+                            {{ number_format($amount, 2, '.', ' ') }} {{ $code }}<br>
+                        @empty
+                            —
+                        @endforelse
+                    </td>
+                    <td>
+                        @forelse ($participant['owes_by_currency'] ?? [] as $code => $amount)
+                            {{ number_format($amount, 2, '.', ' ') }} {{ $code }}<br>
+                        @empty
+                            —
+                        @endforelse
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    @endforeach
+
+    @if (! ($summary['books_balanced'] ?? true))
+        <p><strong>Внимание:</strong> сумма оплат по чекам не сходится с долями на
+            {{ number_format($summary['unsettled_rub'] ?? 0, 2, '.', ' ') }} ₽
+            (допуск ±10% при вводе). Часть долга не распределена между участниками.</p>
+    @endif
+
+    <h2>Кто кому переводит (в ₽)</h2>
     <table>
         <thead>
             <tr>

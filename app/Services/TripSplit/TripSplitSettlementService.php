@@ -80,6 +80,8 @@ class TripSplitSettlementService
             'trip_name' => $settlement->trip_name,
             'participants' => $summary['participants'] ?? [],
             'transfers' => $summary['transfers'] ?? [],
+            'books_balanced' => $summary['books_balanced'] ?? true,
+            'unsettled_rub' => $summary['unsettled_rub'] ?? 0.0,
             'pdf_url' => url('/api/tripsplit/settlements/'.$settlement->uuid.'/pdf?uuid='.$user->uuid),
             'created_at' => $settlement->created_at?->toIso8601String(),
         ];

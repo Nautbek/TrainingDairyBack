@@ -7,6 +7,12 @@ class TripSplitSettlementCalculator
     private const RUB = 'RUB';
 
     /**
+     * Сводит поездку:
+     * — paid_by_currency / owes_by_currency: фактические суммы в исходных валютах;
+     * — paid_rub / owes_rub: всё пересчитано в ₽ по курсам поездки;
+     * — balance_rub = paid_rub − owes_rub (переплата +, недоплата −);
+     * — transfers: кто кому переводит в ₽ по итоговому balance_rub.
+     *
      * @param  array<string, mixed>  $trip
      * @return array<string, mixed>
      */
@@ -51,27 +57,32 @@ class TripSplitSettlementCalculator
         }
 
         $participantSummaries = [];
+        $balanceSum = 0.0;
         foreach ($participants as $participantId => $name) {
             $paidRub = $this->sumInRub($paidByCurrency[$participantId] ?? [], $rates);
             $owesRub = $this->sumInRub($owesByCurrency[$participantId] ?? [], $rates);
+            $balanceRub = round($paidRub - $owesRub, 2);
+            $balanceSum += $balanceRub;
 
             $participantSummaries[] = [
                 'id' => $participantId,
                 'name' => $name,
                 'paid_rub' => round($paidRub, 2),
                 'owes_rub' => round($owesRub, 2),
-                'balance_rub' => round($paidRub - $owesRub, 2),
+                'balance_rub' => $balanceRub,
                 'paid_by_currency' => $this->roundCurrencyMap($paidByCurrency[$participantId] ?? []),
                 'owes_by_currency' => $this->roundCurrencyMap($owesByCurrency[$participantId] ?? []),
             ];
         }
 
-        $transfers = $this->buildTransfers($participantSummaries, $participants, $paidByCurrency, $owesByCurrency, $rates);
+        $transfers = $this->buildTransfers($participantSummaries, $participants);
 
         return [
             'trip_name' => (string) ($trip['name'] ?? ''),
             'participants' => $participantSummaries,
             'transfers' => $transfers,
+            'books_balanced' => abs($balanceSum) < 0.01,
+            'unsettled_rub' => abs($balanceSum) >= 0.01 ? round(abs($balanceSum), 2) : 0.0,
         ];
     }
 
@@ -145,78 +156,41 @@ class TripSplitSettlementCalculator
     }
 
     /**
+     * Переводы только в ₽ по balance_rub (все валюты уже сведены через курсы).
+     *
      * @param  array<int, array<string, mixed>>  $participantSummaries
      * @param  array<int, string>  $participants
-     * @param  array<int, array<string, float>>  $paidByCurrency
-     * @param  array<int, array<string, float>>  $owesByCurrency
-     * @param  array<string, float>  $rates
      * @return array<int, array<string, mixed>>
      */
-    private function buildTransfers(
-        array $participantSummaries,
-        array $participants,
-        array $paidByCurrency,
-        array $owesByCurrency,
-        array $rates,
-    ): array {
-        $transfers = [];
-        $currencies = array_unique(array_merge(
-            array_keys($rates),
-            ...array_map(fn (array $map): array => array_keys($map), $paidByCurrency),
-            ...array_map(fn (array $map): array => array_keys($map), $owesByCurrency),
-        ));
-
-        foreach ($currencies as $currency) {
-            $balances = [];
-            foreach ($participants as $participantId => $name) {
-                $paid = $paidByCurrency[$participantId][$currency] ?? 0.0;
-                $owes = $owesByCurrency[$participantId][$currency] ?? 0.0;
-                $balance = round($paid - $owes, 2);
-                if (abs($balance) >= 0.01) {
-                    $balances[$participantId] = $balance;
-                }
-            }
-
-            foreach ($this->simplifyDebts($balances) as $transfer) {
-                $transfers[] = [
-                    'from_participant_id' => $transfer['from'],
-                    'from_name' => $participants[$transfer['from']],
-                    'to_participant_id' => $transfer['to'],
-                    'to_name' => $participants[$transfer['to']],
-                    'amount' => round($transfer['amount'], 2),
-                    'currency_code' => $currency,
-                    'amount_rub' => round($transfer['amount'] * ($rates[$currency] ?? 1.0), 2),
-                ];
+    private function buildTransfers(array $participantSummaries, array $participants): array
+    {
+        $rubBalances = [];
+        foreach ($participantSummaries as $summary) {
+            $balance = (float) $summary['balance_rub'];
+            if (abs($balance) >= 0.01) {
+                $rubBalances[(int) $summary['id']] = $balance;
             }
         }
 
-        if ($transfers === []) {
-            $rubBalances = [];
-            foreach ($participantSummaries as $summary) {
-                $balance = (float) $summary['balance_rub'];
-                if (abs($balance) >= 0.01) {
-                    $rubBalances[(int) $summary['id']] = $balance;
-                }
-            }
-
-            foreach ($this->simplifyDebts($rubBalances) as $transfer) {
-                $transfers[] = [
-                    'from_participant_id' => $transfer['from'],
-                    'from_name' => $participants[$transfer['from']],
-                    'to_participant_id' => $transfer['to'],
-                    'to_name' => $participants[$transfer['to']],
-                    'amount' => round($transfer['amount'], 2),
-                    'currency_code' => self::RUB,
-                    'amount_rub' => round($transfer['amount'], 2),
-                ];
-            }
+        $transfers = [];
+        foreach ($this->simplifyDebts($rubBalances) as $transfer) {
+            $amount = round($transfer['amount'], 2);
+            $transfers[] = [
+                'from_participant_id' => $transfer['from'],
+                'from_name' => $participants[$transfer['from']],
+                'to_participant_id' => $transfer['to'],
+                'to_name' => $participants[$transfer['to']],
+                'amount' => $amount,
+                'currency_code' => self::RUB,
+                'amount_rub' => $amount,
+            ];
         }
 
         return $transfers;
     }
 
     /**
-     * @param  array<int, float>  $balances
+     * @param  array<int, float>  $balances  положительный = переплата (получает), отрицательный = должен (платит)
      * @return array<int, array{from: int, to: int, amount: float}>
      */
     private function simplifyDebts(array $balances): array
