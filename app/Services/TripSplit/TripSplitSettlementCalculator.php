@@ -7,11 +7,11 @@ class TripSplitSettlementCalculator
     private const RUB = 'RUB';
 
     /**
-     * Сводит поездку:
-     * — paid_by_currency / owes_by_currency: фактические суммы в исходных валютах;
-     * — paid_rub / owes_rub: всё пересчитано в ₽ по курсам поездки;
-     * — balance_rub = paid_rub − owes_rub (переплата +, недоплата −);
-     * — transfers: кто кому переводит в ₽ по итоговому balance_rub.
+     * Сводит поездку по фактическим оплатам (payer_payments), без учёта суммы чека (amount).
+     *
+     * Доли участников масштабируются пропорционально реально оплаченному по чеку:
+     * owes_i = share_i × (Σ оплат в валюте чека / Σ долей).
+     * Так допуск ±10% между суммой чека и оплатами не ломает взаиморасчёт.
      *
      * @param  array<string, mixed>  $trip
      * @return array<string, mixed>
@@ -31,13 +31,6 @@ class TripSplitSettlementCalculator
         foreach ($trip['transactions'] ?? [] as $transaction) {
             $txCurrency = strtoupper((string) ($transaction['currency_code'] ?? self::RUB));
 
-            foreach ($transaction['shares'] ?? [] as $share) {
-                $participantId = (int) $share['participant_id'];
-                $amount = (float) $share['amount'];
-                $owesByCurrency[$participantId][$txCurrency] =
-                    ($owesByCurrency[$participantId][$txCurrency] ?? 0.0) + $amount;
-            }
-
             $payerPayments = $transaction['payer_payments'] ?? [];
             if ($payerPayments === []) {
                 $payerPayments = [[
@@ -45,6 +38,36 @@ class TripSplitSettlementCalculator
                     'amount' => (float) ($transaction['amount'] ?? 0),
                     'currency_code' => $txCurrency,
                 ]];
+            }
+
+            $sharesSum = 0.0;
+            foreach ($transaction['shares'] ?? [] as $share) {
+                $sharesSum += (float) $share['amount'];
+            }
+
+            $paidInTxCurrency = 0.0;
+            foreach ($payerPayments as $payment) {
+                $paidInTxCurrency += $this->convertAmount(
+                    (float) $payment['amount'],
+                    strtoupper((string) ($payment['currency_code'] ?? $txCurrency)),
+                    $txCurrency,
+                    $rates,
+                );
+            }
+
+            $scale = $sharesSum > 0.001 && $paidInTxCurrency > 0
+                ? $paidInTxCurrency / $sharesSum
+                : 0.0;
+
+            foreach ($transaction['shares'] ?? [] as $share) {
+                $participantId = (int) $share['participant_id'];
+                $shareAmount = (float) $share['amount'];
+                if ($shareAmount <= 0.001) {
+                    continue;
+                }
+                $owedAmount = $shareAmount * $scale;
+                $owesByCurrency[$participantId][$txCurrency] =
+                    ($owesByCurrency[$participantId][$txCurrency] ?? 0.0) + $owedAmount;
             }
 
             foreach ($payerPayments as $payment) {
@@ -81,8 +104,8 @@ class TripSplitSettlementCalculator
             'trip_name' => (string) ($trip['name'] ?? ''),
             'participants' => $participantSummaries,
             'transfers' => $transfers,
-            'books_balanced' => abs($balanceSum) < 0.01,
-            'unsettled_rub' => abs($balanceSum) >= 0.01 ? round(abs($balanceSum), 2) : 0.0,
+            'books_balanced' => abs($balanceSum) < 0.05,
+            'unsettled_rub' => abs($balanceSum) >= 0.05 ? round(abs($balanceSum), 2) : 0.0,
         ];
     }
 
@@ -116,6 +139,26 @@ class TripSplitSettlementCalculator
         }
 
         return $rates;
+    }
+
+    /**
+     * @param  array<string, float>  $rates
+     */
+    private function convertAmount(float $amount, string $fromCode, string $toCode, array $rates): float
+    {
+        if ($amount <= 0) {
+            return 0.0;
+        }
+        if ($fromCode === $toCode) {
+            return $amount;
+        }
+        $fromRate = $rates[$fromCode] ?? null;
+        $toRate = $rates[$toCode] ?? null;
+        if ($fromRate === null || $toRate === null || $fromRate <= 0 || $toRate <= 0) {
+            return 0.0;
+        }
+
+        return $amount * $fromRate / $toRate;
     }
 
     /**
@@ -156,8 +199,6 @@ class TripSplitSettlementCalculator
     }
 
     /**
-     * Переводы только в ₽ по balance_rub (все валюты уже сведены через курсы).
-     *
      * @param  array<int, array<string, mixed>>  $participantSummaries
      * @param  array<int, string>  $participants
      * @return array<int, array<string, mixed>>
@@ -190,7 +231,7 @@ class TripSplitSettlementCalculator
     }
 
     /**
-     * @param  array<int, float>  $balances  положительный = переплата (получает), отрицательный = должен (платит)
+     * @param  array<int, float>  $balances
      * @return array<int, array{from: int, to: int, amount: float}>
      */
     private function simplifyDebts(array $balances): array

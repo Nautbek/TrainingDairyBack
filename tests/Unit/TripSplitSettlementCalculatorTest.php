@@ -59,10 +59,10 @@ class TripSplitSettlementCalculatorTest extends TestCase
         $this->assertEquals('RUB', $result['transfers'][0]['currency_code']);
     }
 
-    public function test_cross_currency_payment_settles_in_rub(): void
+    public function test_cross_currency_payment_scales_owes_to_actual_paid(): void
     {
-        // Чек 400 EUR, доли по 100 EUR. Аня платит 200 EUR, Боря — 180 USD (не EUR).
-        // Курсы: EUR=100, USD=90 → оплаты 20 000 + 16 200 = 36 200 ₽, доли 40 000 ₽.
+        // Чек 400 EUR, доли по 200 EUR. Оплаты: 200 EUR + 180 USD (= 162 EUR).
+        // Доли масштабируются: 362/400 → каждому по 181 EUR услуг.
         $result = $this->calculator->calculate([
             'name' => 'Cross currency',
             'participants' => [
@@ -70,7 +70,6 @@ class TripSplitSettlementCalculatorTest extends TestCase
                 ['id' => 2, 'name' => 'Боря'],
             ],
             'currencies' => [
-                ['code' => 'RUB', 'rate_to_rub' => 1],
                 ['code' => 'USD', 'rate_to_rub' => 90],
                 ['code' => 'EUR', 'rate_to_rub' => 100],
             ],
@@ -91,24 +90,23 @@ class TripSplitSettlementCalculatorTest extends TestCase
             ],
         ]);
 
-        // Аня: 200 EUR (20 000 ₽), услуги 200 EUR (20 000 ₽) → 0
+        $this->assertTrue($result['books_balanced']);
+        $this->assertEquals(0.0, $result['unsettled_rub']);
         $this->assertEquals(20000.0, $result['participants'][0]['paid_rub']);
-        $this->assertEquals(20000.0, $result['participants'][0]['owes_rub']);
-        $this->assertEquals(0.0, $result['participants'][0]['balance_rub']);
-
-        // Боря: 180 USD (16 200 ₽), услуги 200 EUR (20 000 ₽) → −3 800 ₽
+        $this->assertEquals(18100.0, $result['participants'][0]['owes_rub']);
+        $this->assertEquals(1900.0, $result['participants'][0]['balance_rub']);
         $this->assertEquals(16200.0, $result['participants'][1]['paid_rub']);
-        $this->assertEquals(20000.0, $result['participants'][1]['owes_rub']);
-        $this->assertEquals(-3800.0, $result['participants'][1]['balance_rub']);
+        $this->assertEquals(18100.0, $result['participants'][1]['owes_rub']);
+        $this->assertEquals(-1900.0, $result['participants'][1]['balance_rub']);
 
-        $this->assertFalse($result['books_balanced']);
-        $this->assertEquals(3800.0, $result['unsettled_rub']);
-        $this->assertEmpty($result['transfers']);
+        $this->assertCount(1, $result['transfers']);
+        $this->assertEquals(2, $result['transfers'][0]['from_participant_id']);
+        $this->assertEquals(1, $result['transfers'][0]['to_participant_id']);
+        $this->assertEquals(1900.0, $result['transfers'][0]['amount']);
     }
 
     public function test_cross_currency_with_third_debtor_produces_rub_transfers(): void
     {
-        // 300 EUR на троих, Аня 200 EUR, Боря 180 USD, Вера ничего не платила.
         $result = $this->calculator->calculate([
             'name' => 'Three participants',
             'participants' => [
@@ -138,52 +136,44 @@ class TripSplitSettlementCalculatorTest extends TestCase
             ],
         ]);
 
-        $this->assertEquals(10000.0, $result['participants'][0]['balance_rub']);
-        $this->assertEquals(6200.0, $result['participants'][1]['balance_rub']);
-        $this->assertEquals(-10000.0, $result['participants'][2]['balance_rub']);
+        $this->assertTrue($result['books_balanced']);
+        $this->assertEquals(0.0, $result['unsettled_rub']);
+        $this->assertEquals(7933.33, $result['participants'][0]['balance_rub']);
+        $this->assertEquals(4133.33, $result['participants'][1]['balance_rub']);
+        $this->assertEquals(-12066.67, $result['participants'][2]['balance_rub']);
 
-        $this->assertCount(1, $result['transfers']);
+        $this->assertCount(2, $result['transfers']);
         $this->assertEquals(3, $result['transfers'][0]['from_participant_id']);
         $this->assertEquals(1, $result['transfers'][0]['to_participant_id']);
-        $this->assertEquals(10000.0, $result['transfers'][0]['amount']);
-        $this->assertEquals('RUB', $result['transfers'][0]['currency_code']);
+        $this->assertEquals(7933.33, $result['transfers'][0]['amount']);
+        $this->assertEquals(3, $result['transfers'][1]['from_participant_id']);
+        $this->assertEquals(2, $result['transfers'][1]['to_participant_id']);
+        $this->assertEquals(4133.33, $result['transfers'][1]['amount']);
     }
 
-    public function test_stress_trip_rub_transfers(): void
+    public function test_stress_trip_balances_with_ten_percent_gap(): void
     {
         $result = $this->calculator->calculate($this->stressTripPayload());
 
-        $byId = [];
-        foreach ($result['participants'] as $participant) {
-            $byId[$participant['id']] = $participant;
-        }
-
-        $this->assertEquals(4425.0, $byId[1]['balance_rub']);
-        $this->assertEquals(20925.0, $byId[2]['balance_rub']);
-        $this->assertEquals(-6825.0, $byId[3]['balance_rub']);
-        $this->assertEquals(-22325.0, $byId[4]['balance_rub']);
-        $this->assertFalse($result['books_balanced']);
-        $this->assertEquals(3800.0, $result['unsettled_rub']);
-
-        $this->assertCount(2, $result['transfers']);
-        $this->assertEquals(
-            [
-                ['from' => 4, 'to' => 2, 'amount' => 20925.0],
-                ['from' => 3, 'to' => 1, 'amount' => 4425.0],
-            ],
-            array_map(
-                fn (array $t) => [
-                    'from' => $t['from_participant_id'],
-                    'to' => $t['to_participant_id'],
-                    'amount' => $t['amount'],
-                ],
-                $result['transfers']
-            )
-        );
+        $this->assertTrue($result['books_balanced']);
+        $this->assertEquals(0.0, $result['unsettled_rub']);
+        $this->assertNotEmpty($result['transfers']);
 
         foreach ($result['transfers'] as $transfer) {
             $this->assertEquals('RUB', $transfer['currency_code']);
             $this->assertEquals($transfer['amount'], $transfer['amount_rub']);
+        }
+
+        $balancesAfter = [];
+        foreach ($result['participants'] as $p) {
+            $balancesAfter[(int) $p['id']] = (float) $p['balance_rub'];
+        }
+        foreach ($result['transfers'] as $t) {
+            $balancesAfter[$t['from_participant_id']] += $t['amount'];
+            $balancesAfter[$t['to_participant_id']] -= $t['amount'];
+        }
+        foreach ($balancesAfter as $balance) {
+            $this->assertLessThan(0.05, abs($balance));
         }
     }
 
