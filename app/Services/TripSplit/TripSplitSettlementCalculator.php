@@ -7,11 +7,14 @@ class TripSplitSettlementCalculator
     private const RUB = 'RUB';
 
     /**
-     * Сводит поездку по фактическим оплатам (payer_payments), без учёта суммы чека (amount).
+     * Сводит поездку по фактическим оплатам (payer_payments).
      *
-     * Доли участников масштабируются пропорционально реально оплаченному по чеку:
-     * owes_i = share_i × (Σ оплат в валюте чека / Σ долей).
-     * Так допуск ±10% между суммой чека и оплатами не ломает взаиморасчёт.
+     * Доли вводятся по сумме чека и задают долю потребления. При расчёте:
+     * 1. Σ оплат → рубли;
+     * 2. доли → рубли, коэффициент_i = доля_i / Σ долей;
+     * 3. потребление_i = коэффициент_i × Σ оплат (в ₽).
+     *
+     * Сумма чека (amount) в расчёте не участвует — только доли и фактические оплаты.
      *
      * @param  array<string, mixed>  $trip
      * @return array<string, mixed>
@@ -22,57 +25,34 @@ class TripSplitSettlementCalculator
         $rates = $this->buildRates($trip['currencies'] ?? []);
 
         $paidByCurrency = [];
+        $owesRubByParticipant = [];
         $owesByCurrency = [];
+        $transactionDetails = [];
         foreach (array_keys($participants) as $participantId) {
             $paidByCurrency[$participantId] = [];
+            $owesRubByParticipant[$participantId] = 0.0;
             $owesByCurrency[$participantId] = [];
         }
 
         foreach ($trip['transactions'] ?? [] as $transaction) {
-            $txCurrency = strtoupper((string) ($transaction['currency_code'] ?? self::RUB));
+            $breakdown = $this->breakDownTransaction($transaction, $participants, $rates);
+            $transactionDetails[] = $breakdown;
 
-            $payerPayments = $transaction['payer_payments'] ?? [];
-            if ($payerPayments === []) {
-                $payerPayments = [[
-                    'participant_id' => (int) ($transaction['payer_id'] ?? 0),
-                    'amount' => (float) ($transaction['amount'] ?? 0),
-                    'currency_code' => $txCurrency,
-                ]];
-            }
-
-            $sharesSum = 0.0;
-            foreach ($transaction['shares'] ?? [] as $share) {
-                $sharesSum += (float) $share['amount'];
-            }
-
-            $paidInTxCurrency = 0.0;
-            foreach ($payerPayments as $payment) {
-                $paidInTxCurrency += $this->convertAmount(
-                    (float) $payment['amount'],
-                    strtoupper((string) ($payment['currency_code'] ?? $txCurrency)),
-                    $txCurrency,
-                    $rates,
-                );
-            }
-
-            $scale = $sharesSum > 0.001 && $paidInTxCurrency > 0
-                ? $paidInTxCurrency / $sharesSum
-                : 0.0;
-
-            foreach ($transaction['shares'] ?? [] as $share) {
-                $participantId = (int) $share['participant_id'];
-                $shareAmount = (float) $share['amount'];
-                if ($shareAmount <= 0.001) {
-                    continue;
+            foreach ($breakdown['consumption'] as $row) {
+                $participantId = (int) $row['participant_id'];
+                $owesRubByParticipant[$participantId] += (float) $row['consumption_rub'];
+                $txCurrency = $breakdown['currency_code'];
+                $txRate = $rates[$txCurrency] ?? null;
+                if ($txRate !== null && $txRate > 0) {
+                    $owesByCurrency[$participantId][$txCurrency] =
+                        ($owesByCurrency[$participantId][$txCurrency] ?? 0.0)
+                        + (float) $row['consumption_rub'] / $txRate;
                 }
-                $owedAmount = $shareAmount * $scale;
-                $owesByCurrency[$participantId][$txCurrency] =
-                    ($owesByCurrency[$participantId][$txCurrency] ?? 0.0) + $owedAmount;
             }
 
-            foreach ($payerPayments as $payment) {
+            foreach ($breakdown['payer_payments'] as $payment) {
                 $participantId = (int) $payment['participant_id'];
-                $currency = strtoupper((string) ($payment['currency_code'] ?? $txCurrency));
+                $currency = strtoupper((string) $payment['currency_code']);
                 $amount = (float) $payment['amount'];
                 $paidByCurrency[$participantId][$currency] =
                     ($paidByCurrency[$participantId][$currency] ?? 0.0) + $amount;
@@ -83,7 +63,7 @@ class TripSplitSettlementCalculator
         $balanceSum = 0.0;
         foreach ($participants as $participantId => $name) {
             $paidRub = $this->sumInRub($paidByCurrency[$participantId] ?? [], $rates);
-            $owesRub = $this->sumInRub($owesByCurrency[$participantId] ?? [], $rates);
+            $owesRub = $owesRubByParticipant[$participantId];
             $balanceRub = round($paidRub - $owesRub, 2);
             $balanceSum += $balanceRub;
 
@@ -102,10 +82,108 @@ class TripSplitSettlementCalculator
 
         return [
             'trip_name' => (string) ($trip['name'] ?? ''),
+            'calculation_note' => 'Доли вводятся по сумме чека. Потребление участника = (его доля / Σ долей) × Σ фактических оплат (в ₽).',
             'participants' => $participantSummaries,
+            'transactions' => $transactionDetails,
             'transfers' => $transfers,
             'books_balanced' => abs($balanceSum) < 0.05,
             'unsettled_rub' => abs($balanceSum) >= 0.05 ? round(abs($balanceSum), 2) : 0.0,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $transaction
+     * @param  array<int, string>  $participants
+     * @param  array<string, float>  $rates
+     * @return array<string, mixed>
+     */
+    private function breakDownTransaction(array $transaction, array $participants, array $rates): array
+    {
+        $txCurrency = strtoupper((string) ($transaction['currency_code'] ?? self::RUB));
+
+        $payerPayments = $transaction['payer_payments'] ?? [];
+        if ($payerPayments === []) {
+            $payerPayments = [[
+                'participant_id' => (int) ($transaction['payer_id'] ?? 0),
+                'amount' => (float) ($transaction['amount'] ?? 0),
+                'currency_code' => $txCurrency,
+            ]];
+        }
+
+        $paidTotalRub = 0.0;
+        $paidInReceiptCurrency = 0.0;
+        foreach ($payerPayments as $payment) {
+            $currency = strtoupper((string) ($payment['currency_code'] ?? $txCurrency));
+            $amount = (float) $payment['amount'];
+            $rate = $rates[$currency] ?? null;
+            if ($rate !== null && $rate > 0) {
+                $paidTotalRub += $amount * $rate;
+            }
+            $paidInReceiptCurrency += $this->convertAmount($amount, $currency, $txCurrency, $rates);
+        }
+
+        $shareRubByParticipant = [];
+        $shareReceiptByParticipant = [];
+        $sharesTotalRub = 0.0;
+        $sharesTotalReceipt = 0.0;
+        foreach ($transaction['shares'] ?? [] as $share) {
+            $shareAmount = (float) $share['amount'];
+            if ($shareAmount <= 0.001) {
+                continue;
+            }
+            $participantId = (int) $share['participant_id'];
+            $shareReceiptByParticipant[$participantId] =
+                ($shareReceiptByParticipant[$participantId] ?? 0.0) + $shareAmount;
+            $sharesTotalReceipt += $shareAmount;
+            $shareRub = $this->convertAmount($shareAmount, $txCurrency, self::RUB, $rates);
+            $shareRubByParticipant[$participantId] =
+                ($shareRubByParticipant[$participantId] ?? 0.0) + $shareRub;
+            $sharesTotalRub += $shareRub;
+        }
+
+        $consumption = [];
+        if ($sharesTotalRub > 0.001 && $paidTotalRub > 0) {
+            foreach ($shareRubByParticipant as $participantId => $shareRub) {
+                $coef = $shareRub / $sharesTotalRub;
+                $consumptionRub = $coef * $paidTotalRub;
+                $txRate = $rates[$txCurrency] ?? null;
+                $consumptionReceipt = ($txRate !== null && $txRate > 0)
+                    ? $consumptionRub / $txRate
+                    : 0.0;
+
+                $consumption[] = [
+                    'participant_id' => $participantId,
+                    'name' => $participants[$participantId] ?? ('#'.$participantId),
+                    'share_receipt' => round($shareReceiptByParticipant[$participantId] ?? 0.0, 2),
+                    'share_percent' => round($coef * 100, 2),
+                    'consumption_rub' => round($consumptionRub, 2),
+                    'consumption_receipt' => round($consumptionReceipt, 2),
+                ];
+            }
+        }
+
+        usort($consumption, fn (array $a, array $b): int => strcmp($a['name'], $b['name']));
+
+        $normalizedPayments = [];
+        foreach ($payerPayments as $payment) {
+            $normalizedPayments[] = [
+                'participant_id' => (int) $payment['participant_id'],
+                'name' => $participants[(int) $payment['participant_id']] ?? ('#'.($payment['participant_id'] ?? '?')),
+                'amount' => round((float) $payment['amount'], 2),
+                'currency_code' => strtoupper((string) ($payment['currency_code'] ?? $txCurrency)),
+            ];
+        }
+
+        return [
+            'id' => (int) ($transaction['id'] ?? 0),
+            'description' => (string) ($transaction['description'] ?? ''),
+            'receipt_amount' => round((float) ($transaction['amount'] ?? 0), 2),
+            'currency_code' => $txCurrency,
+            'shares_total_receipt' => round($sharesTotalReceipt, 2),
+            'paid_total_rub' => round($paidTotalRub, 2),
+            'paid_in_receipt_currency' => round($paidInReceiptCurrency, 2),
+            'payer_payments' => $normalizedPayments,
+            'consumption' => $consumption,
         ];
     }
 

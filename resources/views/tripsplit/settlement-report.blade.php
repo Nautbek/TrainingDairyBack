@@ -11,11 +11,15 @@
         th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
         th { background: #f3f3f3; }
         .muted { color: #666; font-size: 11px; }
+        .note { background: #f8f8f8; border-left: 3px solid #888; padding: 8px 10px; font-size: 11px; margin: 12px 0 16px; }
     </style>
 </head>
 <body>
     <h1>Отчёт по поездке: {{ $settlement->trip_name }}</h1>
     <p class="muted">Расчёт № {{ $settlement->uuid }} · {{ $settlement->created_at?->format('d.m.Y H:i') }}</p>
+    @if (!empty($summary['calculation_note']))
+        <p class="note">{{ $summary['calculation_note'] }}</p>
+    @endif
 
     <h2>Итоги по участникам</h2>
     <table>
@@ -23,7 +27,7 @@
             <tr>
                 <th>Участник</th>
                 <th>Оплатил (₽)</th>
-                <th>Услуги (₽)</th>
+                <th>Потребление (₽)</th>
                 <th>Баланс (₽)</th>
             </tr>
         </thead>
@@ -44,7 +48,7 @@
         <p><strong>{{ $participant['name'] }}</strong></p>
         <table>
             <thead>
-                <tr><th>Вложил</th><th>Услуги (доли)</th></tr>
+                <tr><th>Вложил</th><th>Потребление</th></tr>
             </thead>
             <tbody>
                 <tr>
@@ -93,48 +97,67 @@
         </tbody>
     </table>
 
-    <h2>Чеки</h2>
-    @foreach ($trip['transactions'] ?? [] as $transaction)
-        <p><strong>{{ $transaction['description'] ?? 'Без описания' }}</strong>
-            — {{ number_format((float) ($transaction['amount'] ?? 0), 2, '.', ' ') }}
-            {{ strtoupper($transaction['currency_code'] ?? 'RUB') }}</p>
+    <h2>Чеки и расчёт потребления</h2>
+    @foreach ($summary['transactions'] ?? [] as $transaction)
+        <p>
+            <strong>{{ $transaction['description'] ?: 'Без описания' }}</strong>
+        </p>
+        <p class="muted">
+            Сумма чека: {{ number_format((float) ($transaction['receipt_amount'] ?? 0), 2, '.', ' ') }}
+            {{ $transaction['currency_code'] ?? 'RUB' }}
+            · Доли по чеку: {{ number_format((float) ($transaction['shares_total_receipt'] ?? 0), 2, '.', ' ') }}
+            {{ $transaction['currency_code'] ?? 'RUB' }}
+            · Оплачено: {{ number_format((float) ($transaction['paid_in_receipt_currency'] ?? 0), 2, '.', ' ') }}
+            {{ $transaction['currency_code'] ?? 'RUB' }}
+            ({{ number_format((float) ($transaction['paid_total_rub'] ?? 0), 2, '.', ' ') }} ₽)
+        </p>
         <table>
             <thead>
-                <tr><th colspan="2">Доли</th></tr>
+                <tr>
+                    <th>Участник</th>
+                    <th>Доля по чеку</th>
+                    <th>Доля, %</th>
+                    <th>Потребление (₽)</th>
+                    <th>Потребление (валюта чека)</th>
+                </tr>
             </thead>
             <tbody>
-                @foreach ($transaction['shares'] ?? [] as $share)
-                    @php
-                        $participant = collect($trip['participants'] ?? [])->firstWhere('id', $share['participant_id']);
-                    @endphp
+                @forelse ($transaction['consumption'] ?? [] as $row)
                     <tr>
-                        <td>{{ $participant['name'] ?? ('#'.$share['participant_id']) }}</td>
-                        <td>{{ number_format((float) $share['amount'], 2, '.', ' ') }}</td>
+                        <td>{{ $row['name'] }}</td>
+                        <td>{{ number_format((float) $row['share_receipt'], 2, '.', ' ') }}</td>
+                        <td>{{ number_format((float) $row['share_percent'], 2, '.', ' ') }}%</td>
+                        <td>{{ number_format((float) $row['consumption_rub'], 2, '.', ' ') }}</td>
+                        <td>{{ number_format((float) $row['consumption_receipt'], 2, '.', ' ') }} {{ $transaction['currency_code'] ?? 'RUB' }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr><td colspan="5">Нет долей для расчёта.</td></tr>
+                @endforelse
             </tbody>
         </table>
         <table>
             <thead>
-                <tr><th colspan="2">Оплаты</th></tr>
+                <tr><th colspan="2">Кто оплатил</th></tr>
             </thead>
             <tbody>
-                @foreach (($transaction['payer_payments'] ?? []) ?: [[
-                    'participant_id' => $transaction['payer_id'] ?? null,
-                    'amount' => $transaction['amount'] ?? 0,
-                    'currency_code' => $transaction['currency_code'] ?? 'RUB',
-                ]] as $payment)
-                    @php
-                        $participant = collect($trip['participants'] ?? [])->firstWhere('id', $payment['participant_id']);
-                    @endphp
+                @forelse ($transaction['payer_payments'] ?? [] as $payment)
                     <tr>
-                        <td>{{ $participant['name'] ?? ('#'.$payment['participant_id']) }}</td>
-                        <td>{{ number_format((float) $payment['amount'], 2, '.', ' ') }} {{ strtoupper($payment['currency_code'] ?? 'RUB') }}</td>
+                        <td>{{ $payment['name'] ?? ('#'.$payment['participant_id']) }}</td>
+                        <td>{{ number_format((float) $payment['amount'], 2, '.', ' ') }} {{ $payment['currency_code'] ?? 'RUB' }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr><td colspan="2">—</td></tr>
+                @endforelse
             </tbody>
         </table>
         <br>
     @endforeach
+    @if (empty($summary['transactions']))
+        @foreach ($trip['transactions'] ?? [] as $transaction)
+            <p><strong>{{ $transaction['description'] ?? 'Без описания' }}</strong>
+                — {{ number_format((float) ($transaction['amount'] ?? 0), 2, '.', ' ') }}
+                {{ strtoupper($transaction['currency_code'] ?? 'RUB') }}</p>
+        @endforeach
+    @endif
 </body>
 </html>

@@ -59,6 +59,50 @@ class TripSplitSettlementCalculatorTest extends TestCase
         $this->assertEquals('RUB', $result['transfers'][0]['currency_code']);
     }
 
+    public function test_receipt_shares_scaled_to_actual_payment_in_rub(): void
+    {
+        // Чек 2343 ₽, доли по чеку 1171.50 + 1171.50. Оплата 2300 ₽.
+        // Каждый «съел» 50% → по 1150 ₽ потребления.
+        $result = $this->calculator->calculate([
+            'name' => 'Receipt gap',
+            'participants' => [
+                ['id' => 1, 'name' => 'Аня'],
+                ['id' => 2, 'name' => 'Боря'],
+            ],
+            'currencies' => [
+                ['code' => 'RUB', 'rate_to_rub' => 1],
+            ],
+            'transactions' => [
+                [
+                    'id' => 1,
+                    'amount' => 2343,
+                    'currency_code' => 'RUB',
+                    'shares' => [
+                        ['participant_id' => 1, 'amount' => 1171.50],
+                        ['participant_id' => 2, 'amount' => 1171.50],
+                    ],
+                    'payer_payments' => [
+                        ['participant_id' => 1, 'amount' => 2300, 'currency_code' => 'RUB'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertTrue($result['books_balanced']);
+        $this->assertEquals(2300.0, $result['participants'][0]['paid_rub']);
+        $this->assertEquals(1150.0, $result['participants'][0]['owes_rub']);
+        $this->assertEquals(1150.0, $result['participants'][0]['balance_rub']);
+        $this->assertEquals(1150.0, $result['participants'][1]['owes_rub']);
+        $this->assertEquals(-1150.0, $result['participants'][1]['balance_rub']);
+
+        $tx = $result['transactions'][0];
+        $this->assertEquals(2343.0, $tx['receipt_amount']);
+        $this->assertEquals(2300.0, $tx['paid_in_receipt_currency']);
+        $this->assertCount(2, $tx['consumption']);
+        $this->assertEquals(50.0, $tx['consumption'][0]['share_percent']);
+        $this->assertEquals(1150.0, $tx['consumption'][0]['consumption_rub']);
+    }
+
     public function test_cross_currency_payment_scales_owes_to_actual_paid(): void
     {
         // Чек 400 EUR, доли по 200 EUR. Оплаты: 200 EUR + 180 USD (= 162 EUR).
