@@ -194,7 +194,7 @@ class DonationPaymentService
     {
         $payment = DonationPayment::resolveFromYooKassaObject($paymentObject);
 
-        if ($payment === null || TripSplitPaymentService::isTripSplitPayment($payment)) {
+        if ($payment === null || self::isForeignAppPayment($payment)) {
             return;
         }
 
@@ -240,7 +240,7 @@ class DonationPaymentService
     {
         $payment = DonationPayment::resolveFromYooKassaObject($paymentObject);
 
-        if ($payment === null || TripSplitPaymentService::isTripSplitPayment($payment)) {
+        if ($payment === null || self::isForeignAppPayment($payment)) {
             return;
         }
 
@@ -375,5 +375,11 @@ class DonationPaymentService
                 'paid_at' => now(),
             ]);
         });
+    }
+
+    private static function isForeignAppPayment(?DonationPayment $payment): bool
+    {
+        return TripSplitPaymentService::isTripSplitPayment($payment)
+            || MyCarPaymentService::isMyCarPayment($payment);
     }
 }

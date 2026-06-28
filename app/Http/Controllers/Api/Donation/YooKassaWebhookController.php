@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Donation;
 use App\Http\Controllers\Controller;
 use App\Models\DonationPayment;
 use App\Services\DonationPaymentService;
+use App\Services\MyCarPaymentService;
 use App\Services\TripSplitPaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class YooKassaWebhookController extends Controller
         Request $request,
         DonationPaymentService $donationPaymentService,
         TripSplitPaymentService $tripSplitPaymentService,
+        MyCarPaymentService $myCarPaymentService,
     ): JsonResponse {
         Log::info('YooKassa webhook received', [
             'ip' => $request->ip(),
@@ -32,7 +34,9 @@ class YooKassaWebhookController extends Controller
                 ? DonationPayment::resolveFromYooKassaObject($object)
                 : null;
 
-            if (TripSplitPaymentService::isTripSplitPayment($payment)) {
+            if (MyCarPaymentService::isMyCarPayment($payment)) {
+                $myCarPaymentService->handleWebhook($payload);
+            } elseif (TripSplitPaymentService::isTripSplitPayment($payment)) {
                 $tripSplitPaymentService->handleWebhook($payload);
             } else {
                 $donationPaymentService->handleWebhook($payload);

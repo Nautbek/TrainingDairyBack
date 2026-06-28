@@ -5,6 +5,10 @@ use App\Http\Controllers\Api\Donation\CreateDonationController;
 use App\Http\Controllers\Api\Donation\DonationPaymentStatusController;
 use App\Http\Controllers\Api\Donation\SubscriptionStatusController;
 use App\Http\Controllers\Api\Donation\YooKassaWebhookController;
+use App\Http\Controllers\Api\MyCar\ConfirmMyCarPaymentController;
+use App\Http\Controllers\Api\MyCar\CreateMyCarPaymentController;
+use App\Http\Controllers\Api\MyCar\MyCarPaymentStatusController;
+use App\Http\Controllers\Api\MyCar\MyCarSubscriptionStatusController;
 use App\Http\Controllers\Api\Nutrition\ProductSearchByBarcodeController;
 use App\Http\Controllers\Api\Nutrition\ProductSearchController;
 use App\Http\Controllers\Api\Nutrition\ProductStoreController;
@@ -44,3 +48,8 @@ Route::get('/tripsplit/payments/{paymentUuid}/status', TripSplitPaymentStatusCon
 Route::get('/tripsplit/credits', TripSplitCreditsController::class);
 Route::post('/tripsplit/settle', SettleTripController::class);
 Route::get('/tripsplit/settlements/{settlementUuid}/pdf', TripSplitSettlementPdfController::class);
+
+Route::post('/mycar/payments/create', CreateMyCarPaymentController::class);
+Route::post('/mycar/payments/confirm', ConfirmMyCarPaymentController::class);
+Route::get('/mycar/payments/{paymentUuid}/status', MyCarPaymentStatusController::class);
+Route::get('/mycar/subscription', MyCarSubscriptionStatusController::class);
