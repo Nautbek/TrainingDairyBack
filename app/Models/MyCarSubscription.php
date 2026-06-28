@@ -13,6 +13,8 @@ use Illuminate\Support\Carbon;
  */
 class MyCarSubscription extends Model
 {
+    protected $table = 'mycar_subscriptions';
+
     protected $fillable = [
         'user_id',
         'premium_until',
