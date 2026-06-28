@@ -56,6 +56,30 @@ class TelegramNotificationService
         return $this->sendMessage($message);
     }
 
+    public function sendMyCarPaymentNotification(
+        int $amount,
+        int $months,
+        string $userUuid,
+        ?string $paymentMethodType = null,
+        ?string $yookassaPaymentId = null,
+        ?string $premiumUntil = null,
+    ): bool {
+        $method = $paymentMethodType ?: 'не указан';
+        $message = "My Car оплата: {$amount} ₽, {$months} мес.\n"
+            ."Пользователь: {$userUuid}\n"
+            ."Способ: {$method}";
+
+        if ($yookassaPaymentId !== null && $yookassaPaymentId !== '') {
+            $message .= "\nЮKassa: {$yookassaPaymentId}";
+        }
+
+        if ($premiumUntil !== null && $premiumUntil !== '') {
+            $message .= "\nPremium до: {$premiumUntil}";
+        }
+
+        return $this->sendMessage($message);
+    }
+
     public function sendTripSplitPaymentNotification(
         int $amount,
         int $credits,

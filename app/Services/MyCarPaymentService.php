@@ -19,6 +19,7 @@ class MyCarPaymentService
     public function __construct(
         private readonly YooKassaService $yooKassaService,
         private readonly MyCarSubscriptionService $myCarSubscriptionService,
+        private readonly TelegramNotificationService $telegramNotificationService,
     ) {}
 
     /**
@@ -51,6 +52,7 @@ class MyCarPaymentService
         if ($yooKassaPayment->getStatus() === YooKassaPaymentStatus::SUCCEEDED) {
             $this->applySucceeded($payment->fresh());
             $user = User::query()->where('uuid', $userUuid)->first();
+            $this->notifyPaymentSucceeded($payment->fresh(), $user, $yooKassaPayment);
 
             return $this->buildTokenPaymentResponse($payment->fresh(), $user);
         }
@@ -141,7 +143,13 @@ class MyCarPaymentService
         }
 
         if ($yooKassaPayment->getStatus() === YooKassaPaymentStatus::SUCCEEDED) {
+            $wasAlreadySucceeded = $payment->status === PaymentStatus::Succeeded;
             $this->applySucceeded($payment);
+            if (! $wasAlreadySucceeded) {
+                $payment = $payment->fresh();
+                $user = User::query()->where('uuid', $payment->user_uuid)->first();
+                $this->notifyPaymentSucceeded($payment, $user, $yooKassaPayment);
+            }
         }
 
         if ($yooKassaPayment->getStatus() === YooKassaPaymentStatus::CANCELED) {
@@ -200,7 +208,20 @@ class MyCarPaymentService
             return;
         }
 
+        $wasAlreadySucceeded = $payment->status === PaymentStatus::Succeeded;
         $this->applySucceeded($payment);
+
+        if ($wasAlreadySucceeded) {
+            return;
+        }
+
+        $payment->refresh();
+        if ($payment->status !== PaymentStatus::Succeeded) {
+            return;
+        }
+
+        $user = User::query()->where('uuid', $payment->user_uuid)->first();
+        $this->notifyPaymentSucceeded($payment, $user, null, $paymentObject);
     }
 
     /**
@@ -243,6 +264,46 @@ class MyCarPaymentService
                 'paid_at' => now(),
             ]);
         });
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $paymentObject
+     */
+    private function notifyPaymentSucceeded(
+        DonationPayment $payment,
+        ?User $user,
+        ?PaymentInterface $yooKassaPayment = null,
+        ?array $paymentObject = null,
+    ): void {
+        if ($payment->status !== PaymentStatus::Succeeded) {
+            return;
+        }
+
+        $paymentMethodType = null;
+        if ($paymentObject !== null
+            && isset($paymentObject['payment_method'])
+            && is_array($paymentObject['payment_method'])) {
+            $type = $paymentObject['payment_method']['type'] ?? null;
+            if (is_string($type)) {
+                $paymentMethodType = $type;
+            }
+        } elseif ($yooKassaPayment?->getPaymentMethod() !== null) {
+            $paymentMethodType = $yooKassaPayment->getPaymentMethod()->getType();
+        }
+
+        $yookassaPaymentId = $paymentObject['id'] ?? $payment->yookassa_payment_id ?? null;
+        $premiumUntil = $user !== null
+            ? $this->myCarSubscriptionService->getPremiumUntil($user)?->timezone(config('app.timezone'))->format('d.m.Y H:i')
+            : null;
+
+        $this->telegramNotificationService->sendMyCarPaymentNotification(
+            $payment->amount,
+            $payment->months,
+            $payment->user_uuid,
+            $paymentMethodType,
+            is_string($yookassaPaymentId) ? $yookassaPaymentId : null,
+            $premiumUntil,
+        );
     }
 
     /**
