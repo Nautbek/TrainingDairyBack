@@ -11,8 +11,9 @@ class TelegramNotificationService
 
     private int $chatId;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly MobileAppPresenter $mobileAppPresenter,
+    ) {
         $this->apiUrl = config('services.telegram.api_url');
         $this->chatId = config('services.telegram.chat_id');
     }
@@ -22,7 +23,7 @@ class TelegramNotificationService
      */
     public function sendFeedbackNotification(string $app, string $text): bool
     {
-        $message = "Feedback {$app}: {$text}";
+        $message = $this->mobileAppPresenter->formatLabel($app).': '.$text;
 
         return $this->sendMessage($message);
     }
