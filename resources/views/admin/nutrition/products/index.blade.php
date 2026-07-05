@@ -144,7 +144,7 @@
 
         .product-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
             gap: 1rem;
             background: #fff;
@@ -153,7 +153,124 @@
             padding: 1rem 1.25rem;
         }
 
+        .product-item.saved {
+            border-color: #86efac;
+            background: #f0fdf4;
+        }
+
+        .product-item.has-errors {
+            border-color: #fca5a5;
+            background: #fef2f2;
+        }
+
         .product-info { flex: 1; min-width: 0; }
+
+        .field-input,
+        .field-textarea,
+        .field-select {
+            width: 100%;
+            padding: 0.375rem 0.5rem;
+            border: 1px solid #e5e5e3;
+            border-radius: 0.25rem;
+            font-size: inherit;
+            font-family: inherit;
+            background: #fff;
+            color: #1b1b18;
+        }
+
+        .field-input:focus,
+        .field-textarea:focus,
+        .field-select:focus {
+            outline: none;
+            border-color: #a8a7a4;
+        }
+
+        .field-input--name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .field-textarea {
+            font-size: 0.8125rem;
+            color: #706f6c;
+            margin-bottom: 0.375rem;
+            resize: vertical;
+            min-height: 2.25rem;
+        }
+
+        .macros-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 0.75rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .macro-field {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: #706f6c;
+        }
+
+        .macro-field .field-input {
+            width: 4.5rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.375rem;
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 0.75rem;
+            align-items: center;
+            margin-top: 0.375rem;
+        }
+
+        .meta-field {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.6875rem;
+            color: #a8a7a4;
+        }
+
+        .meta-field .field-input,
+        .meta-field .field-select {
+            font-size: 0.6875rem;
+            padding: 0.2rem 0.375rem;
+            width: auto;
+            min-width: 6rem;
+        }
+
+        .meta-field .field-input--barcode { min-width: 9rem; }
+        .meta-field .field-input--uuid { min-width: 14rem; font-family: ui-monospace, monospace; }
+
+        .field-error {
+            font-size: 0.6875rem;
+            color: #dc2626;
+            margin-top: 0.25rem;
+        }
+
+        .flash {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .flash-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .flash-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
 
         .product-name {
             font-weight: 600;
@@ -219,6 +336,11 @@
             background: #fef2f2;
         }
 
+        .save-btn:hover {
+            color: #2563eb;
+            background: #dbeafe;
+        }
+
         .empty {
             text-align: center;
             padding: 3rem 1rem;
@@ -262,6 +384,18 @@
 <body>
     <div class="container">
         <h1>Продукты</h1>
+
+        @if (session('saved_product_id'))
+            <div class="flash flash-success">Продукт #{{ session('saved_product_id') }} сохранён</div>
+        @endif
+
+        @if ($errors->any())
+            <div class="flash flash-error">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
 
         <form class="search-form" method="GET" action="{{ route('admin.products.index', [], false) }}">
             <input type="hidden" name="status" value="{{ $currentStatus }}">
@@ -313,25 +447,104 @@
 
             <div class="product-list">
                 @foreach ($products as $product)
-                    <div class="product-item">
-                        <div class="product-info">
-                            <div class="product-name">{{ $product->name }}</div>
-                            @if ($product->description)
-                                <div class="product-desc">{{ $product->description }}</div>
+                    @php
+                        $editing = (int) old('_product_id') === $product->id;
+                        $val = fn (string $field) => $editing ? old($field, $product->{$field}) : $product->{$field};
+                        $statusValue = $editing ? (int) old('status', $product->status->value) : $product->status->value;
+                    @endphp
+                    <div @class([
+                        'product-item',
+                        'saved' => session('saved_product_id') === $product->id,
+                        'has-errors' => $editing && $errors->any(),
+                    ])>
+                        <form
+                            id="product-form-{{ $product->id }}"
+                            class="product-info"
+                            method="POST"
+                            action="{{ route('admin.products.update', $product, false) }}"
+                        >
+                            @csrf
+                            <input type="hidden" name="_product_id" value="{{ $product->id }}">
+
+                            <input
+                                class="field-input field-input--name"
+                                type="text"
+                                name="name"
+                                value="{{ $val('name') }}"
+                                required
+                            >
+                            @if ($editing && $errors->has('name'))
+                                <div class="field-error">{{ $errors->first('name') }}</div>
                             @endif
-                            <div class="product-macros">
-                                Б {{ $product->proteins }} · Ж {{ $product->fats }} · У {{ $product->carbs }} · {{ $product->calories }} ккал
+
+                            <textarea
+                                class="field-textarea"
+                                name="description"
+                                placeholder="Описание"
+                                rows="2"
+                            >{{ $val('description') }}</textarea>
+
+                            <div class="macros-row">
+                                <label class="macro-field">
+                                    Б
+                                    <input class="field-input" type="number" name="proteins" value="{{ $val('proteins') }}" min="0" step="0.01" required>
+                                </label>
+                                <label class="macro-field">
+                                    Ж
+                                    <input class="field-input" type="number" name="fats" value="{{ $val('fats') }}" min="0" step="0.01" required>
+                                </label>
+                                <label class="macro-field">
+                                    У
+                                    <input class="field-input" type="number" name="carbs" value="{{ $val('carbs') }}" min="0" step="0.01" required>
+                                </label>
+                                <label class="macro-field">
+                                    ккал
+                                    <input class="field-input" type="number" name="calories" value="{{ $val('calories') }}" min="0" step="0.01" required>
+                                </label>
                             </div>
-                            <div class="product-meta">
-                                #{{ $product->id }}
-                                @if ($product->barcode)
-                                    · штрихкод: {{ $product->barcode }}
-                                @endif
-                                · {{ $product->author_uuid }} · {{ $product->created_at?->format('d.m.Y H:i') }}
+
+                            <div class="meta-row">
+                                <span class="meta-field">#{{ $product->id }}</span>
+                                <label class="meta-field">
+                                    штрихкод
+                                    <input class="field-input field-input--barcode" type="text" name="barcode" value="{{ $val('barcode') }}">
+                                </label>
+                                <label class="meta-field">
+                                    автор
+                                    <input class="field-input field-input--uuid" type="text" name="author_uuid" value="{{ $val('author_uuid') }}" required>
+                                </label>
+                                <label class="meta-field">
+                                    статус
+                                    <select class="field-select" name="status">
+                                        @foreach ([ProductStatus::Draft, ProductStatus::Active, ProductStatus::Decline] as $statusOption)
+                                            <option value="{{ $statusOption->value }}" @selected($statusValue === $statusOption->value)>
+                                                {{ match ($statusOption) {
+                                                    ProductStatus::Draft => 'Черновик',
+                                                    ProductStatus::Active => 'Активный',
+                                                    ProductStatus::Decline => 'Отклонён',
+                                                } }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <span class="meta-field">{{ $product->created_at?->format('d.m.Y H:i') }}</span>
                             </div>
-                        </div>
+                        </form>
 
                         <div class="product-actions">
+                            <button
+                                type="submit"
+                                form="product-form-{{ $product->id }}"
+                                class="action-btn save-btn"
+                                title="Сохранить"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                            </button>
+
                             @if ($currentStatus === ProductStatus::Draft->value)
                                 <form method="POST" action="{{ route('admin.products.approve', $product, false) }}">
                                     @csrf

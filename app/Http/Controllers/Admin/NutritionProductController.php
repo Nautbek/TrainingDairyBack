@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Nutrition\ProductStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Nutrition\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,17 @@ class NutritionProductController extends Controller
             'counts' => $counts,
             'search' => $search,
         ]);
+    }
+
+    public function update(UpdateProductRequest $request, Product $product): RedirectResponse
+    {
+        if ((int) $request->input('_product_id') !== $product->id) {
+            abort(404);
+        }
+
+        $product->update($request->safe()->except('_product_id'));
+
+        return back()->with('saved_product_id', $product->id);
     }
 
     public function destroy(Product $product): RedirectResponse
