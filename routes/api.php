@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\Donation\CreateDonationController;
 use App\Http\Controllers\Api\Donation\DonationPaymentStatusController;
 use App\Http\Controllers\Api\Donation\SubscriptionStatusController;
 use App\Http\Controllers\Api\Donation\YooKassaWebhookController;
+use App\Http\Controllers\Api\Feedback\FeedbackMessageController;
+use App\Http\Controllers\Api\Feedback\FeedbackThreadController;
 use App\Http\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\UserFeedbackController;
 use App\Http\Controllers\Api\UserOpenController;
@@ -23,6 +25,13 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', RegisterController::class);
 Route::post('/user_open', UserOpenController::class);
 Route::post('/user_feedback', UserFeedbackController::class);
+
+// Фидбек-чат: треды обращений + сообщения. Отдельно от /user_feedback выше,
+// которая остаётся каналом для activity-пингов (см. Modules/*/… и Helper).
+Route::get('/feedback/threads', [FeedbackThreadController::class, 'index']);
+Route::post('/feedback/threads', [FeedbackThreadController::class, 'store']);
+Route::get('/feedback/threads/{id}', [FeedbackThreadController::class, 'show']);
+Route::post('/feedback/threads/{id}/messages', [FeedbackMessageController::class, 'store']);
 
 Route::post('/donations/create', CreateDonationController::class);
 Route::post('/donations/confirm', ConfirmDonationController::class);
