@@ -4,37 +4,26 @@ namespace App\Services;
 
 class MobileAppPresenter
 {
-    /**
-     * @var array<string, array{emoji: string, name: string}>
-     */
-    private const APPS = [
-        'com.example.trainingdiary' => [
-            'emoji' => '🏋️',
-            'name' => 'Training Diary',
-        ],
-        'ru.nautbekcustom.nutritionjournal' => [
-            'emoji' => '🍽️',
-            'name' => 'Nutrition Journal',
-        ],
-        'ru.nautbek.custom' => [
-            'emoji' => '✈️',
-            'name' => 'TripSplit',
-        ],
-        'ru.nautbek_custom.mycar' => [
-            'emoji' => '🚗',
-            'name' => 'My Car',
-        ],
-    ];
-
     public function formatLabel(string $app): string
     {
-        $entry = self::APPS[$this->normalizePackage($app)] ?? null;
+        $entry = $this->apps()[$this->normalizePackage($app)] ?? null;
 
         if ($entry === null) {
             return $app;
         }
 
         return "{$entry['emoji']} {$entry['name']}";
+    }
+
+    /**
+     * @return array<string, array{emoji: string, name: string}>
+     */
+    private function apps(): array
+    {
+        /** @var array<string, array{emoji: string, name: string}> $apps */
+        $apps = config('mobile_apps.apps', []);
+
+        return $apps;
     }
 
     private function normalizePackage(string $app): string

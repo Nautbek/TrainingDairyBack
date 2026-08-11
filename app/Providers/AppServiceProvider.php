@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Payment\PaymentHandlerRegistry;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(
+            PaymentHandlerRegistry::class,
+            fn ($app) => new PaymentHandlerRegistry($app->tagged('payment.app.handlers')),
+        );
     }
 
     /**

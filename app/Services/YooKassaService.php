@@ -87,126 +87,6 @@ class YooKassaService
         return $this->createPayment($payload, $idempotenceKey);
     }
 
-    public function createTripSplitPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
-    {
-        $payload = [
-            'amount' => [
-                'value' => number_format($payment->amount, 2, '.', ''),
-                'currency' => CurrencyCode::RUB,
-            ],
-            'capture' => true,
-            'confirmation' => [
-                'type' => ConfirmationType::REDIRECT,
-                'return_url' => (string) config('services.yookassa.return_url'),
-            ],
-            'description' => "TripSplit — {$payment->months} подсчёт(ов) итогов",
-            'metadata' => $this->tripSplitMetadata($payment),
-        ];
-
-        return $this->createPayment($payload, $idempotenceKey);
-    }
-
-    public function createTripSplitPaymentWithToken(
-        DonationPayment $payment,
-        string $paymentToken,
-        string $idempotenceKey,
-    ): CreatePaymentResponse {
-        $payload = [
-            'amount' => [
-                'value' => number_format($payment->amount, 2, '.', ''),
-                'currency' => CurrencyCode::RUB,
-            ],
-            'capture' => true,
-            'payment_token' => $paymentToken,
-            'description' => "TripSplit — {$payment->months} подсчёт(ов) итогов",
-            'metadata' => $this->tripSplitMetadata($payment),
-        ];
-
-        return $this->createPayment($payload, $idempotenceKey);
-    }
-
-    public function createTripSplitSbpPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
-    {
-        $payload = [
-            'amount' => [
-                'value' => number_format($payment->amount, 2, '.', ''),
-                'currency' => CurrencyCode::RUB,
-            ],
-            'capture' => true,
-            'payment_method_data' => [
-                'type' => 'sbp',
-            ],
-            'confirmation' => [
-                'type' => ConfirmationType::REDIRECT,
-                'return_url' => (string) config('services.yookassa.return_url'),
-            ],
-            'description' => "TripSplit — {$payment->months} подсчёт(ов) итогов",
-            'metadata' => $this->tripSplitMetadata($payment),
-        ];
-
-        return $this->createPayment($payload, $idempotenceKey);
-    }
-
-    public function createMyCarPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
-    {
-        $payload = [
-            'amount' => [
-                'value' => number_format($payment->amount, 2, '.', ''),
-                'currency' => CurrencyCode::RUB,
-            ],
-            'capture' => true,
-            'confirmation' => [
-                'type' => ConfirmationType::REDIRECT,
-                'return_url' => (string) config('services.yookassa.return_url'),
-            ],
-            'description' => "My Car — {$payment->months} мес. расширенного функционала",
-            'metadata' => $this->myCarMetadata($payment),
-        ];
-
-        return $this->createPayment($payload, $idempotenceKey);
-    }
-
-    public function createMyCarPaymentWithToken(
-        DonationPayment $payment,
-        string $paymentToken,
-        string $idempotenceKey,
-    ): CreatePaymentResponse {
-        $payload = [
-            'amount' => [
-                'value' => number_format($payment->amount, 2, '.', ''),
-                'currency' => CurrencyCode::RUB,
-            ],
-            'capture' => true,
-            'payment_token' => $paymentToken,
-            'description' => "My Car — {$payment->months} мес. расширенного функционала",
-            'metadata' => $this->myCarMetadata($payment),
-        ];
-
-        return $this->createPayment($payload, $idempotenceKey);
-    }
-
-    public function createMyCarSbpPayment(DonationPayment $payment, string $idempotenceKey): CreatePaymentResponse
-    {
-        $payload = [
-            'amount' => [
-                'value' => number_format($payment->amount, 2, '.', ''),
-                'currency' => CurrencyCode::RUB,
-            ],
-            'capture' => true,
-            'payment_method_data' => [
-                'type' => 'sbp',
-            ],
-            'confirmation' => [
-                'type' => ConfirmationType::REDIRECT,
-                'return_url' => (string) config('services.yookassa.return_url'),
-            ],
-            'description' => "My Car — {$payment->months} мес. расширенного функционала",
-            'metadata' => $this->myCarMetadata($payment),
-        ];
-
-        return $this->createPayment($payload, $idempotenceKey);
-    }
-
     public function getPayment(string $yookassaPaymentId): ?PaymentInterface
     {
         $path = self::PAYMENTS_PATH.'/'.$yookassaPaymentId;
@@ -240,35 +120,12 @@ class YooKassaService
     }
 
     /**
-     * @return array<string, string>
-     */
-    private function tripSplitMetadata(DonationPayment $payment): array
-    {
-        return [
-            'donation_payment_uuid' => $payment->uuid,
-            'user_uuid' => $payment->user_uuid,
-            'credits' => (string) $payment->months,
-            'app' => (string) config('tripsplit.app'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function myCarMetadata(DonationPayment $payment): array
-    {
-        return [
-            'donation_payment_uuid' => $payment->uuid,
-            'user_uuid' => $payment->user_uuid,
-            'months' => (string) $payment->months,
-            'app' => (string) config('mycar.app'),
-        ];
-    }
-
-    /**
+     * Generic payment creation, used by the donation flow above and by any
+     * module (MyCar, TripSplit, ...) that builds its own YooKassa payload.
+     *
      * @param  array<string, mixed>  $payload
      */
-    private function createPayment(array $payload, string $idempotenceKey): CreatePaymentResponse
+    public function createPayment(array $payload, string $idempotenceKey): CreatePaymentResponse
     {
         $headers = [
             'Idempotence-Key' => $idempotenceKey,
