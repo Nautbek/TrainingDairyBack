@@ -1,0 +1,13 @@
+[Unit]
+Description=TrainingDairyBack queue worker (service notifications, etc.)
+After=network.target postgresql.service
+
+[Service]
+User=root
+WorkingDirectory=/var/www/TrainingDairyBack
+ExecStart=/usr/bin/php /var/www/TrainingDairyBack/artisan queue:work database --queue=service-notifications,default --sleep=3 --max-time=3600
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
