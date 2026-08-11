@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\Donation\PaymentStatus;
 use App\Models\DonationPayment;
 use App\Models\User;
+use App\Services\Payment\PaymentHandlerRegistry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use YooKassa\Model\Notification\NotificationEventType;
@@ -21,6 +22,7 @@ class DonationPaymentService
         private readonly AdFreeSubscriptionService $adFreeSubscriptionService,
         private readonly TelegramNotificationService $telegramNotificationService,
         private readonly DonationAppResolver $donationAppResolver,
+        private readonly PaymentHandlerRegistry $paymentHandlerRegistry,
     ) {}
 
     /**
@@ -194,7 +196,7 @@ class DonationPaymentService
     {
         $payment = DonationPayment::resolveFromYooKassaObject($paymentObject);
 
-        if ($payment === null || self::isForeignAppPayment($payment)) {
+        if ($payment === null || $this->paymentHandlerRegistry->findFor($payment) !== null) {
             return;
         }
 
@@ -240,7 +242,7 @@ class DonationPaymentService
     {
         $payment = DonationPayment::resolveFromYooKassaObject($paymentObject);
 
-        if ($payment === null || self::isForeignAppPayment($payment)) {
+        if ($payment === null || $this->paymentHandlerRegistry->findFor($payment) !== null) {
             return;
         }
 
@@ -375,11 +377,5 @@ class DonationPaymentService
                 'paid_at' => now(),
             ]);
         });
-    }
-
-    private static function isForeignAppPayment(?DonationPayment $payment): bool
-    {
-        return TripSplitPaymentService::isTripSplitPayment($payment)
-            || MyCarPaymentService::isMyCarPayment($payment);
     }
 }

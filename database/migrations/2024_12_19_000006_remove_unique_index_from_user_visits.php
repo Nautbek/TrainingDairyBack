@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('user_visits')) {
+        if (Schema::hasTable('user_visits') && DB::getDriverName() === 'pgsql') {
             // Удаляем constraint, который автоматически удалит связанный индекс
             // В PostgreSQL уникальный constraint называется user_visits_visit_date_visit_ip_key
             DB::statement('ALTER TABLE user_visits DROP CONSTRAINT IF EXISTS user_visits_visit_date_visit_ip_key');

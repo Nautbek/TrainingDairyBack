@@ -3,8 +3,13 @@
 namespace Tests\Unit;
 
 use App\Services\MobileAppPresenter;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
+/**
+ * Boots the full app (rather than plain PHPUnit\Framework\TestCase) because
+ * per-app labels (My Car, TripSplit, Nutrition Journal) are contributed to
+ * config('mobile_apps') by each module's own service provider at boot time.
+ */
 class MobileAppPresenterTest extends TestCase
 {
     public function test_formats_known_apps_with_emoji(): void

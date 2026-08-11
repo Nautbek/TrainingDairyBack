@@ -57,58 +57,13 @@ class TelegramNotificationService
         return $this->sendMessage($message);
     }
 
-    public function sendMyCarPaymentNotification(
-        int $amount,
-        int $months,
-        string $userUuid,
-        ?string $paymentMethodType = null,
-        ?string $yookassaPaymentId = null,
-        ?string $premiumUntil = null,
-    ): bool {
-        $method = $paymentMethodType ?: 'не указан';
-        $message = "My Car оплата: {$amount} ₽, {$months} мес.\n"
-            ."Пользователь: {$userUuid}\n"
-            ."Способ: {$method}";
-
-        if ($yookassaPaymentId !== null && $yookassaPaymentId !== '') {
-            $message .= "\nЮKassa: {$yookassaPaymentId}";
-        }
-
-        if ($premiumUntil !== null && $premiumUntil !== '') {
-            $message .= "\nPremium до: {$premiumUntil}";
-        }
-
-        return $this->sendMessage($message);
-    }
-
-    public function sendTripSplitPaymentNotification(
-        int $amount,
-        int $credits,
-        string $userUuid,
-        ?string $paymentMethodType = null,
-        ?string $yookassaPaymentId = null,
-        ?int $usageCount = null,
-    ): bool {
-        $method = $paymentMethodType ?: 'не указан';
-        $message = "TripSplit оплата: {$amount} ₽, {$credits} подсчёт(ов)\n"
-            ."Пользователь: {$userUuid}\n"
-            ."Способ: {$method}";
-
-        if ($yookassaPaymentId !== null && $yookassaPaymentId !== '') {
-            $message .= "\nЮKassa: {$yookassaPaymentId}";
-        }
-
-        if ($usageCount !== null) {
-            $message .= "\nБаланс: {$usageCount}";
-        }
-
-        return $this->sendMessage($message);
-    }
-
     /**
-     * Отправить сообщение в Telegram
+     * Отправить произвольное сообщение в Telegram.
+     *
+     * Публичный, чтобы модули (MyCar, TripSplit, ...) могли отправлять свои
+     * собственные уведомления, не добавляя module-specific методы сюда, в core.
      */
-    private function sendMessage(string $message): bool
+    public function sendMessage(string $message): bool
     {
         if (empty($this->apiUrl) || empty($this->chatId)) {
             Log::warning('Telegram configuration is missing');
