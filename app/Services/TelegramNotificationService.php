@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\ServiceNotificationJob;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -58,10 +59,14 @@ class TelegramNotificationService
     }
 
     /**
-     * Отправить произвольное сообщение в Telegram.
+     * Поставить сообщение в очередь на отправку в Telegram.
      *
      * Публичный, чтобы модули (MyCar, TripSplit, ...) могли отправлять свои
      * собственные уведомления, не добавляя module-specific методы сюда, в core.
+     *
+     * Возвращает true сразу после постановки в очередь (ServiceNotificationJob) —
+     * не значит, что сообщение уже доставлено в Telegram. Саму отправку и
+     * ретраи при сбое делает воркер очереди, см. ServiceNotificationJob::deliver().
      */
     public function sendMessage(string $message): bool
     {
@@ -71,31 +76,42 @@ class TelegramNotificationService
             return false;
         }
 
+        ServiceNotificationJob::dispatch($message);
+
+        return true;
+    }
+
+    /**
+     * Синхронно доставить сообщение в Telegram. Вызывается только из
+     * ServiceNotificationJob (воркером очереди) — не вызывать напрямую из
+     * контроллеров/сервисов, для этого есть sendMessage().
+     */
+    public function deliver(string $message): bool
+    {
         try {
-            $response = Http::post($this->apiUrl, [
+            $response = Http::timeout(10)->post($this->apiUrl, [
                 'chat_id' => $this->chatId,
                 'text' => $message,
             ]);
 
-            if ($response->successful()) {
-                //                return true;
+            if (! $response->successful()) {
+                Log::error('Telegram API error: '.$response->body());
+
+                return false;
             }
 
             try {
                 // Михаил с аватаркой гусь тоже в деле!
-                $response = Http::post($this->apiUrl, [
+                Http::timeout(10)->post($this->apiUrl, [
                     'chat_id' => 596684076,
                     'text' => $message,
                 ]);
-            } catch (\Exception $exception) {
-
+            } catch (\Throwable $exception) {
+                Log::warning('Telegram secondary send failed: '.$exception->getMessage());
             }
 
             return true;
-            Log::error('Telegram API error: '.$response->body());
-
-            return false;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Error sending Telegram message: '.$e->getMessage());
 
             return false;
