@@ -94,9 +94,13 @@ class FeedbackThreadController extends Controller
                 return $thread->fresh('messages');
             });
 
-            $this->telegramService->sendMessage(
-                "Новое обращение №{$thread->id} ({$validated['app']}):\n{$validated['text']}"
-            );
+            $message = "Новое обращение №{$thread->id} ({$validated['app']}):\n{$validated['text']}";
+
+            if (! empty($validated['device_info'])) {
+                $message .= "\n\n".$validated['device_info'];
+            }
+
+            $this->telegramService->sendMessage($message);
 
             return response()->json([
                 'thread' => $this->presentThread($thread, includeMessages: true),
