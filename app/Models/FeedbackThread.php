@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string      $app
  * @property string      $status "open" | "closed"
  * @property string|null $visit_ip
+ * @property string|null $device_info
  */
 class FeedbackThread extends Model
 {
@@ -30,6 +31,7 @@ class FeedbackThread extends Model
         'app',
         'status',
         'visit_ip',
+        'device_info',
     ];
 
     public function user(): BelongsTo

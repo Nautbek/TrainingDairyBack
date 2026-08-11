@@ -82,6 +82,7 @@ class FeedbackThreadController extends Controller
                     'app' => $validated['app'],
                     'status' => FeedbackThread::STATUS_OPEN,
                     'visit_ip' => $request->ip(),
+                    'device_info' => $validated['device_info'] ?? null,
                 ]);
 
                 FeedbackMessage::query()->create([

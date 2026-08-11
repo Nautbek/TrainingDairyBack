@@ -9,6 +9,7 @@ class CreateFeedbackThreadRequest extends UuidHeaderRequest
         return [
             'app' => ['required', 'string', 'max:40'],
             'text' => ['required', 'string', 'min:10', 'max:1000'],
+            'device_info' => ['nullable', 'string', 'max:4000'],
         ];
     }
 
