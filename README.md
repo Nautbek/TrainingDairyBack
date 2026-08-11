@@ -7,6 +7,14 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Этот проект
+
+Общий бэкенд нескольких мобильных приложений. Общий код (пользователи,
+заходы, фидбек, донаты) живёт в `app/`; логика каждого конкретного
+приложения — в `Modules/<App>/`. См. [MODULES.md](MODULES.md) для схемы
+модульной архитектуры и [MOBILE_BACKEND_CONTEXT.md](MOBILE_BACKEND_CONTEXT.md)
+для контекста по API.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
