@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Feedback;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Feedback\CreateFeedbackThreadRequest;
+use App\Http\Requests\Feedback\DeleteFeedbackThreadRequest;
 use App\Http\Requests\Feedback\ListFeedbackThreadsRequest;
 use App\Models\FeedbackMessage;
 use App\Models\FeedbackThread;
@@ -16,8 +17,7 @@ class FeedbackThreadController extends Controller
 {
     public function __construct(
         private readonly TelegramNotificationService $telegramService,
-    ) {
-    }
+    ) {}
 
     /**
      * Список тредов обращений текущего пользователя (по X-User-UUID), новые сверху.
@@ -110,6 +110,35 @@ class FeedbackThreadController extends Controller
 
             return response()->json(['error' => 'Internal Server Error'], 500);
         }
+    }
+
+    /**
+     * Пользователь удаляет своё обращение — только пока оно ещё открыто
+     * (не отвечено и не закрыто админом). Не физическое удаление: тред
+     * остаётся в базе и виден в админке со статусом "удалено пользователем".
+     */
+    public function destroy(DeleteFeedbackThreadRequest $request, int $id): JsonResponse
+    {
+        $userId = $this->resolveUserId($request->validated()['uuid']);
+        $thread = FeedbackThread::query()->find($id);
+
+        if ($thread === null) {
+            return response()->json(['error' => 'not_found'], 404);
+        }
+
+        if ($userId === null || $thread->user_id !== $userId) {
+            return response()->json(['error' => 'forbidden'], 403);
+        }
+
+        if ($thread->status !== FeedbackThread::STATUS_OPEN) {
+            return response()->json(['error' => 'thread_not_open'], 422);
+        }
+
+        $thread->update(['status' => FeedbackThread::STATUS_DELETED_BY_USER]);
+
+        return response()->json([
+            'thread' => $this->presentThread($thread->fresh()),
+        ]);
     }
 
     private function resolveUserId(string $uuid): ?int

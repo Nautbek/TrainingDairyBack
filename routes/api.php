@@ -32,6 +32,7 @@ Route::post('/user_feedback', UserFeedbackController::class);
 Route::get('/feedback/threads', [FeedbackThreadController::class, 'index']);
 Route::post('/feedback/threads', [FeedbackThreadController::class, 'store']);
 Route::get('/feedback/threads/{id}', [FeedbackThreadController::class, 'show']);
+Route::delete('/feedback/threads/{id}', [FeedbackThreadController::class, 'destroy']);
 Route::post('/feedback/threads/{id}/messages', [FeedbackMessageController::class, 'store']);
 
 Route::get('/donations/tiers', DonationTiersController::class);

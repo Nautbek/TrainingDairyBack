@@ -21,7 +21,11 @@ class ReplyFeedbackThreadRequest extends FormRequest
     {
         return [
             '_thread_id' => ['required', 'integer'],
-            'status' => ['required', Rule::in([FeedbackThread::STATUS_OPEN, FeedbackThread::STATUS_CLOSED])],
+            'status' => ['required', Rule::in([
+                FeedbackThread::STATUS_OPEN,
+                FeedbackThread::STATUS_CLOSED,
+                FeedbackThread::STATUS_DELETED_BY_USER,
+            ])],
             'reply' => ['nullable', 'string'],
         ];
     }

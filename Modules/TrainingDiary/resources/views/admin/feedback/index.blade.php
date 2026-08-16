@@ -58,6 +58,7 @@
 
         .tab-open.active { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
         .tab-closed.active { background: #e5e5e3; color: #44403c; border-color: #d4d4d4; }
+        .tab-deleted_by_user.active { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
         .tab.active { font-weight: 600; }
         .tab:not(.active) { opacity: 0.75; }
 
@@ -98,6 +99,7 @@
 
         .status-open { background: #dbeafe; color: #1e3a8a; }
         .status-closed { background: #e5e5e3; color: #44403c; }
+        .status-deleted_by_user { background: #fee2e2; color: #991b1b; }
 
         .thread-uuid {
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -301,7 +303,11 @@
                 class="tab {{ $currentStatus === null ? 'active' : '' }}"
             >Все</a>
 
-            @foreach ([FeedbackThread::STATUS_OPEN => 'Открыты', FeedbackThread::STATUS_CLOSED => 'Закрыты'] as $value => $label)
+            @foreach ([
+                FeedbackThread::STATUS_OPEN => 'Открыты',
+                FeedbackThread::STATUS_CLOSED => 'Закрыты',
+                FeedbackThread::STATUS_DELETED_BY_USER => 'Удалено пользователем',
+            ] as $value => $label)
                 <a
                     href="{{ route('trainingdiary.admin.feedback.index', ['status' => $value], false) }}"
                     class="tab tab-{{ $value }} {{ $currentStatus === $value ? 'active' : '' }}"
@@ -333,7 +339,13 @@
                         <div class="thread-meta">
                             <span>#{{ $thread->id }}</span>
                             <span class="status-badge status-{{ $thread->status }}">
-                                {{ $thread->status === FeedbackThread::STATUS_OPEN ? 'Открыт' : 'Закрыт' }}
+                                @if ($thread->status === FeedbackThread::STATUS_OPEN)
+                                    Открыт
+                                @elseif ($thread->status === FeedbackThread::STATUS_DELETED_BY_USER)
+                                    Удалено пользователем
+                                @else
+                                    Закрыт
+                                @endif
                             </span>
                             <span>{{ $thread->created_at?->format('d.m.Y H:i') }}</span>
                             @if ($thread->visit_ip)
@@ -371,6 +383,7 @@
                                 <select class="field-select" name="status">
                                     <option value="{{ FeedbackThread::STATUS_OPEN }}" @selected($statusValue === FeedbackThread::STATUS_OPEN)>Открыт</option>
                                     <option value="{{ FeedbackThread::STATUS_CLOSED }}" @selected($statusValue === FeedbackThread::STATUS_CLOSED)>Закрыт</option>
+                                    <option value="{{ FeedbackThread::STATUS_DELETED_BY_USER }}" @selected($statusValue === FeedbackThread::STATUS_DELETED_BY_USER)>Удалено пользователем</option>
                                 </select>
                             </div>
                             @if ($editing && $errors->has('status'))

@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Тред обращения пользователя (фидбек-чат).
  *
- * @property int         $id
- * @property int|null    $user_id
- * @property string      $app
- * @property string      $status "open" | "closed"
+ * @property int $id
+ * @property int|null $user_id
+ * @property string $app
+ * @property string $status "open" | "closed"
  * @property string|null $visit_ip
  * @property string|null $device_info
  */
@@ -25,6 +25,9 @@ class FeedbackThread extends Model
     public const STATUS_OPEN = 'open';
 
     public const STATUS_CLOSED = 'closed';
+
+    /** Юзер удалил обращение сам, пока оно было открыто (см. FeedbackThreadController::destroy). */
+    public const STATUS_DELETED_BY_USER = 'deleted_by_user';
 
     protected $fillable = [
         'user_id',
@@ -50,7 +53,7 @@ class FeedbackThread extends Model
     }
 
     /**
-     * @param Builder<FeedbackThread> $query
+     * @param  Builder<FeedbackThread>  $query
      * @return Builder<FeedbackThread>
      */
     public function scopeOpen(Builder $query): Builder

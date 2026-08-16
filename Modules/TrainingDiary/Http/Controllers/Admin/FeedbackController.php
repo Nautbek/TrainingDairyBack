@@ -24,9 +24,11 @@ class FeedbackController extends Controller
     public function index(Request $request): View
     {
         $status = $request->query('status');
-        $statusFilter = in_array($status, [FeedbackThread::STATUS_OPEN, FeedbackThread::STATUS_CLOSED], true)
-            ? $status
-            : null;
+        $statusFilter = in_array($status, [
+            FeedbackThread::STATUS_OPEN,
+            FeedbackThread::STATUS_CLOSED,
+            FeedbackThread::STATUS_DELETED_BY_USER,
+        ], true) ? $status : null;
 
         $query = FeedbackThread::query()
             ->where('app', config('trainingdiary.app_package'))
