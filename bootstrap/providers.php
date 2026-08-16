@@ -8,4 +8,5 @@ return [
     Modules\MyCar\Providers\MyCarServiceProvider::class,
     Modules\TripSplit\Providers\TripSplitServiceProvider::class,
     Modules\Nutrition\Providers\NutritionServiceProvider::class,
+    Modules\TrainingDiary\Providers\TrainingDiaryServiceProvider::class,
 ];

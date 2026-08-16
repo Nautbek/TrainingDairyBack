@@ -15,9 +15,6 @@ return [
     |
     */
     'apps' => [
-        'com.example.trainingdiary' => [
-            'emoji' => '🏋️',
-            'name' => 'Training Diary',
-        ],
+        //
     ],
 ];

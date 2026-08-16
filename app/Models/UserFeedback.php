@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
 /**
+ * @property int                              $id
  * @property string|null                     $visit_ip
  * @property string                          $visit_date
  * @property string|null                     $text
  * @property string|null                     $app
+ * @property string                          $status
+ * @property string|null                     $admin_answer
+ * @property \Illuminate\Support\Carbon|null $answered_at
  * @method static create(array $array)
  */
 class UserFeedback extends Model
@@ -18,10 +22,6 @@ class UserFeedback extends Model
     protected $table = 'user_feedback';
 
     public $timestamps = false;
-    
-    // Указываем, что в таблице нет первичного ключа id
-    public $incrementing = false;
-    protected $primaryKey = null;
 
     /**
      * @var array<int, string>
@@ -32,6 +32,9 @@ class UserFeedback extends Model
         'text',
         'app',
         'user_id',
+        'status',
+        'admin_answer',
+        'answered_at',
     ];
 
     /**
@@ -47,6 +50,7 @@ class UserFeedback extends Model
      */
     protected $casts = [
         'visit_date' => 'date',
+        'answered_at' => 'datetime',
     ];
 
     /**
