@@ -13,8 +13,9 @@ use Illuminate\Support\ServiceProvider;
  * line removes every trace of the module from the running app.
  *
  * Training Diary has no API of its own yet (it only uses the core
- * /user_feedback endpoint), so this module only carries the admin
- * feedback panel for now.
+ * feedback-chat endpoints: /api/feedback/threads, .../messages), so this
+ * module only carries the admin panel for those threads, scoped to
+ * app = config('trainingdiary.app_package').
  */
 class TrainingDiaryServiceProvider extends ServiceProvider
 {

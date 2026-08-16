@@ -13,4 +13,4 @@ use Modules\TrainingDiary\Http\Controllers\Admin\FeedbackController;
 */
 
 Route::get('/', [FeedbackController::class, 'index'])->name('trainingdiary.admin.feedback.index');
-Route::post('/feedback/{feedback}/update', [FeedbackController::class, 'update'])->name('trainingdiary.admin.feedback.update');
+Route::post('/feedback/{thread}/update', [FeedbackController::class, 'update'])->name('trainingdiary.admin.feedback.update');

@@ -2,12 +2,12 @@
 
 namespace Modules\TrainingDiary\Http\Requests\Admin;
 
+use App\Models\FeedbackThread;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
-use Modules\TrainingDiary\Enums\FeedbackStatus;
+use Illuminate\Validation\Rule;
 
-class UpdateFeedbackRequest extends FormRequest
+class ReplyFeedbackThreadRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -20,9 +20,9 @@ class UpdateFeedbackRequest extends FormRequest
     public function rules(): array
     {
         return [
-            '_feedback_id' => ['required', 'integer'],
-            'status' => ['required', new Enum(FeedbackStatus::class)],
-            'admin_answer' => ['nullable', 'string'],
+            '_thread_id' => ['required', 'integer'],
+            'status' => ['required', Rule::in([FeedbackThread::STATUS_OPEN, FeedbackThread::STATUS_CLOSED])],
+            'reply' => ['nullable', 'string'],
         ];
     }
 }

@@ -1,10 +1,10 @@
-@php use Modules\TrainingDiary\Enums\FeedbackStatus; @endphp
+@php use App\Models\FeedbackThread; use App\Models\FeedbackMessage; @endphp
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Фидбек Training Diary — админка</title>
+    <title>Обращения Training Diary — админка</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
     <style>
@@ -56,38 +56,30 @@
 
         .tab:hover { opacity: 0.85; }
 
-        .tab-new.active { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
-        .tab-in_progress.active { background: #fef9c3; color: #854d0e; border-color: #fde047; }
-        .tab-answered.active { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .tab-open.active { background: #dbeafe; color: #1e3a8a; border-color: #93c5fd; }
         .tab-closed.active { background: #e5e5e3; color: #44403c; border-color: #d4d4d4; }
         .tab.active { font-weight: 600; }
         .tab:not(.active) { opacity: 0.75; }
 
-        .feedback-list {
+        .thread-list {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
         }
 
-        .feedback-item {
+        .thread-item {
             background: #fff;
             border: 1px solid #e5e5e3;
             border-radius: 0.5rem;
             padding: 1rem 1.25rem;
         }
 
-        .feedback-item.saved {
+        .thread-item.saved {
             border-color: #86efac;
             background: #f0fdf4;
         }
 
-        .feedback-text {
-            font-size: 0.9375rem;
-            white-space: pre-wrap;
-            margin-bottom: 0.5rem;
-        }
-
-        .feedback-meta {
+        .thread-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 0.75rem;
@@ -104,10 +96,47 @@
             font-weight: 600;
         }
 
-        .status-new { background: #dbeafe; color: #1e3a8a; }
-        .status-in_progress { background: #fef9c3; color: #854d0e; }
-        .status-answered { background: #dcfce7; color: #166534; }
+        .status-open { background: #dbeafe; color: #1e3a8a; }
         .status-closed { background: #e5e5e3; color: #44403c; }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .message {
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            max-width: 85%;
+            white-space: pre-wrap;
+        }
+
+        .message-user {
+            background: #f5f5f3;
+            align-self: flex-start;
+        }
+
+        .message-admin {
+            background: #dbeafe;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message-sender {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #a8a7a4;
+            margin-bottom: 0.125rem;
+        }
+
+        .message-time {
+            font-size: 0.625rem;
+            color: #a8a7a4;
+            margin-top: 0.125rem;
+        }
 
         .answer-form {
             display: flex;
@@ -226,10 +255,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Фидбек — Training Diary</h1>
+        <h1>Обращения — Training Diary</h1>
 
-        @if (session('saved_feedback_id'))
-            <div class="flash flash-success">Отзыв #{{ session('saved_feedback_id') }} сохранён</div>
+        @if (session('saved_thread_id'))
+            <div class="flash flash-success">Обращение №{{ session('saved_thread_id') }} сохранено</div>
         @endif
 
         @if ($errors->any())
@@ -246,70 +275,74 @@
                 class="tab {{ $currentStatus === null ? 'active' : '' }}"
             >Все</a>
 
-            @foreach (FeedbackStatus::cases() as $statusOption)
+            @foreach ([FeedbackThread::STATUS_OPEN => 'Открыты', FeedbackThread::STATUS_CLOSED => 'Закрыты'] as $value => $label)
                 <a
-                    href="{{ route('trainingdiary.admin.feedback.index', ['status' => $statusOption->value], false) }}"
-                    class="tab tab-{{ $statusOption->value }} {{ $currentStatus === $statusOption ? 'active' : '' }}"
+                    href="{{ route('trainingdiary.admin.feedback.index', ['status' => $value], false) }}"
+                    class="tab tab-{{ $value }} {{ $currentStatus === $value ? 'active' : '' }}"
                 >
-                    {{ $statusOption->label() }}
-                    @if ($counts->has($statusOption->value))
-                        ({{ $counts[$statusOption->value] }})
+                    {{ $label }}
+                    @if ($counts->has($value))
+                        ({{ $counts[$value] }})
                     @endif
                 </a>
             @endforeach
         </nav>
 
-        @if ($feedbacks->total() > 0)
+        @if ($threads->total() > 0)
             <div class="list-meta">
-                {{ $feedbacks->firstItem() }}–{{ $feedbacks->lastItem() }} из {{ $feedbacks->total() }}
+                {{ $threads->firstItem() }}–{{ $threads->lastItem() }} из {{ $threads->total() }}
             </div>
 
-            <div class="feedback-list">
-                @foreach ($feedbacks as $feedback)
+            <div class="thread-list">
+                @foreach ($threads as $thread)
                     @php
-                        $editing = (int) old('_feedback_id') === $feedback->id;
-                        $statusValue = $editing ? old('status', $feedback->status) : $feedback->status;
-                        $answerValue = $editing ? old('admin_answer', $feedback->admin_answer) : $feedback->admin_answer;
-                        $currentStatusEnum = FeedbackStatus::tryFrom($feedback->status);
+                        $editing = (int) old('_thread_id') === $thread->id;
+                        $statusValue = $editing ? old('status', $thread->status) : $thread->status;
+                        $replyValue = $editing ? old('reply') : '';
                     @endphp
                     <div @class([
-                        'feedback-item',
-                        'saved' => session('saved_feedback_id') === $feedback->id,
+                        'thread-item',
+                        'saved' => session('saved_thread_id') === $thread->id,
                     ])>
-                        <div class="feedback-text">{{ $feedback->text }}</div>
-
-                        <div class="feedback-meta">
-                            <span>#{{ $feedback->id }}</span>
-                            <span class="status-badge status-{{ $feedback->status }}">
-                                {{ $currentStatusEnum?->label() ?? $feedback->status }}
+                        <div class="thread-meta">
+                            <span>#{{ $thread->id }}</span>
+                            <span class="status-badge status-{{ $thread->status }}">
+                                {{ $thread->status === FeedbackThread::STATUS_OPEN ? 'Открыт' : 'Закрыт' }}
                             </span>
-                            <span>{{ optional($feedback->visit_date)->format('d.m.Y') }}</span>
-                            @if ($feedback->visit_ip)
-                                <span>{{ $feedback->visit_ip }}</span>
+                            <span>{{ $thread->created_at?->format('d.m.Y H:i') }}</span>
+                            @if ($thread->visit_ip)
+                                <span>{{ $thread->visit_ip }}</span>
                             @endif
-                            @if ($feedback->user_id)
-                                <span>user #{{ $feedback->user_id }}</span>
+                            @if ($thread->user_id)
+                                <span>user #{{ $thread->user_id }}</span>
                             @endif
-                            @if ($feedback->answered_at)
-                                <span>отвечено {{ $feedback->answered_at->format('d.m.Y H:i') }}</span>
+                            @if ($thread->device_info)
+                                <span title="{{ $thread->device_info }}">📱 {{ \Illuminate\Support\Str::limit($thread->device_info, 40) }}</span>
                             @endif
+                        </div>
+
+                        <div class="messages">
+                            @foreach ($thread->messages->sortBy('created_at') as $message)
+                                <div>
+                                    <div class="message-sender">{{ $message->sender === FeedbackMessage::SENDER_ADMIN ? 'Админ' : 'Пользователь' }}</div>
+                                    <div class="message message-{{ $message->sender }}">{{ $message->body }}</div>
+                                    <div class="message-time">{{ $message->created_at?->format('d.m.Y H:i') }}</div>
+                                </div>
+                            @endforeach
                         </div>
 
                         <form
                             class="answer-form"
                             method="POST"
-                            action="{{ route('trainingdiary.admin.feedback.update', $feedback, false) }}"
+                            action="{{ route('trainingdiary.admin.feedback.update', $thread, false) }}"
                         >
                             @csrf
-                            <input type="hidden" name="_feedback_id" value="{{ $feedback->id }}">
+                            <input type="hidden" name="_thread_id" value="{{ $thread->id }}">
 
                             <div class="answer-row">
                                 <select class="field-select" name="status">
-                                    @foreach (FeedbackStatus::cases() as $statusOption)
-                                        <option value="{{ $statusOption->value }}" @selected($statusValue === $statusOption->value)>
-                                            {{ $statusOption->label() }}
-                                        </option>
-                                    @endforeach
+                                    <option value="{{ FeedbackThread::STATUS_OPEN }}" @selected($statusValue === FeedbackThread::STATUS_OPEN)>Открыт</option>
+                                    <option value="{{ FeedbackThread::STATUS_CLOSED }}" @selected($statusValue === FeedbackThread::STATUS_CLOSED)>Закрыт</option>
                                 </select>
                             </div>
                             @if ($editing && $errors->has('status'))
@@ -318,11 +351,11 @@
 
                             <textarea
                                 class="field-textarea"
-                                name="admin_answer"
+                                name="reply"
                                 placeholder="Ответ пользователю..."
-                            >{{ $answerValue }}</textarea>
-                            @if ($editing && $errors->has('admin_answer'))
-                                <div class="field-error">{{ $errors->first('admin_answer') }}</div>
+                            >{{ $replyValue }}</textarea>
+                            @if ($editing && $errors->has('reply'))
+                                <div class="field-error">{{ $errors->first('reply') }}</div>
                             @endif
 
                             <button type="submit" class="save-btn">Сохранить</button>
@@ -331,9 +364,9 @@
                 @endforeach
             </div>
 
-            {{ $feedbacks->links('trainingdiary::admin.partials.pagination') }}
+            {{ $threads->links('trainingdiary::admin.partials.pagination') }}
         @else
-            <div class="empty">Нет отзывов в этой категории</div>
+            <div class="empty">Нет обращений в этой категории</div>
         @endif
     </div>
 </body>

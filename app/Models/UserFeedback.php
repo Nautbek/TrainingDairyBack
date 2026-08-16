@@ -7,14 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @property int                              $id
  * @property string|null                     $visit_ip
  * @property string                          $visit_date
  * @property string|null                     $text
  * @property string|null                     $app
- * @property string                          $status
- * @property string|null                     $admin_answer
- * @property \Illuminate\Support\Carbon|null $answered_at
  * @method static create(array $array)
  */
 class UserFeedback extends Model
@@ -22,6 +18,10 @@ class UserFeedback extends Model
     protected $table = 'user_feedback';
 
     public $timestamps = false;
+
+    // Указываем, что в таблице нет первичного ключа id
+    public $incrementing = false;
+    protected $primaryKey = null;
 
     /**
      * @var array<int, string>
@@ -32,9 +32,6 @@ class UserFeedback extends Model
         'text',
         'app',
         'user_id',
-        'status',
-        'admin_answer',
-        'answered_at',
     ];
 
     /**
@@ -44,13 +41,12 @@ class UserFeedback extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+
     /**
      * @var array<string, string>
      */
     protected $casts = [
         'visit_date' => 'date',
-        'answered_at' => 'datetime',
     ];
 
     /**
@@ -75,16 +71,16 @@ class UserFeedback extends Model
 
         // Используем прямой SQL запрос для вставки данных
         $visitDate = now()->toDateString();
-        
+
         if ($userId !== null) {
             DB::insert(
-                "INSERT INTO user_feedback (visit_ip, visit_date, app, text, user_id) 
+                "INSERT INTO user_feedback (visit_ip, visit_date, app, text, user_id)
                  VALUES (?, ?, ?, ?, ?)",
                 [$visitIp, $visitDate, $app, $text, $userId]
             );
         } else {
             DB::insert(
-                "INSERT INTO user_feedback (visit_ip, visit_date, app, text) 
+                "INSERT INTO user_feedback (visit_ip, visit_date, app, text)
                  VALUES (?, ?, ?, ?)",
                 [$visitIp, $visitDate, $app, $text]
             );
