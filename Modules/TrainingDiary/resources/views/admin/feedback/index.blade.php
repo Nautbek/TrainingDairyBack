@@ -99,6 +99,10 @@
         .status-open { background: #dbeafe; color: #1e3a8a; }
         .status-closed { background: #e5e5e3; color: #44403c; }
 
+        .thread-uuid {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+
         .messages {
             display: flex;
             flex-direction: column;
@@ -335,7 +339,9 @@
                             @if ($thread->visit_ip)
                                 <span>{{ $thread->visit_ip }}</span>
                             @endif
-                            @if ($thread->user_id)
+                            @if ($thread->user?->uuid)
+                                <span class="thread-uuid">{{ $thread->user->uuid }}</span>
+                            @elseif ($thread->user_id)
                                 <span>user #{{ $thread->user_id }}</span>
                             @endif
                             @if ($thread->device_info)

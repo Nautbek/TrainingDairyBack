@@ -30,7 +30,7 @@ class FeedbackController extends Controller
 
         $query = FeedbackThread::query()
             ->where('app', config('trainingdiary.app_package'))
-            ->with('messages');
+            ->with(['messages', 'user']);
 
         if ($statusFilter !== null) {
             $query->where('status', $statusFilter);
