@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Donation\ConfirmDonationController;
 use App\Http\Controllers\Api\Donation\CreateDonationController;
 use App\Http\Controllers\Api\Donation\DonationPaymentStatusController;
+use App\Http\Controllers\Api\Donation\DonationTiersController;
 use App\Http\Controllers\Api\Donation\SubscriptionStatusController;
 use App\Http\Controllers\Api\Donation\YooKassaWebhookController;
 use App\Http\Controllers\Api\Feedback\FeedbackMessageController;
@@ -33,6 +34,7 @@ Route::post('/feedback/threads', [FeedbackThreadController::class, 'store']);
 Route::get('/feedback/threads/{id}', [FeedbackThreadController::class, 'show']);
 Route::post('/feedback/threads/{id}/messages', [FeedbackMessageController::class, 'store']);
 
+Route::get('/donations/tiers', DonationTiersController::class);
 Route::post('/donations/create', CreateDonationController::class);
 Route::post('/donations/confirm', ConfirmDonationController::class);
 Route::get('/donations/{paymentUuid}/status', DonationPaymentStatusController::class);

@@ -251,10 +251,32 @@
             opacity: 0.4;
             cursor: default;
         }
+
+        .section-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .section-nav a {
+            color: #706f6c;
+            text-decoration: none;
+        }
+
+        .section-nav a.active {
+            color: #1b1b18;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <nav class="section-nav">
+            <a href="{{ route('trainingdiary.admin.feedback.index', [], false) }}" class="active">Обращения</a>
+            <a href="{{ route('trainingdiary.admin.users.index', [], false) }}">Скидки</a>
+        </nav>
+
         <h1>Обращения — Training Diary</h1>
 
         @if (session('saved_thread_id'))

@@ -23,7 +23,28 @@ class DonationPaymentService
         private readonly TelegramNotificationService $telegramNotificationService,
         private readonly DonationAppResolver $donationAppResolver,
         private readonly PaymentHandlerRegistry $paymentHandlerRegistry,
+        private readonly DonationPricingService $donationPricingService,
     ) {}
+
+    /**
+     * @return array{amount: int, months: int, label: string}
+     */
+    private function resolveTier(int $tierAmount, string $userUuid): array
+    {
+        $tier = config("donations.tiers.{$tierAmount}");
+
+        if ($tier === null) {
+            throw new \InvalidArgumentException('Invalid donation tier');
+        }
+
+        $user = User::query()->where('uuid', $userUuid)->first();
+
+        return [
+            'amount' => $this->donationPricingService->amountFor($user, $tier),
+            'months' => (int) $tier['months'],
+            'label' => (string) $tier['label'],
+        ];
+    }
 
     /**
      * @return array{
@@ -39,11 +60,7 @@ class DonationPaymentService
      */
     public function createPaymentWithToken(string $userUuid, int $tierAmount, string $paymentToken, ?string $app = null): array
     {
-        $tier = config("donations.tiers.{$tierAmount}");
-
-        if ($tier === null) {
-            throw new \InvalidArgumentException('Invalid donation tier');
-        }
+        $tier = $this->resolveTier($tierAmount, $userUuid);
 
         do {
             $paymentUuid = (string) Str::uuid();
@@ -83,11 +100,7 @@ class DonationPaymentService
      */
     public function createPayment(string $userUuid, int $tierAmount, ?string $app = null): array
     {
-        $tier = config("donations.tiers.{$tierAmount}");
-
-        if ($tier === null) {
-            throw new \InvalidArgumentException('Invalid donation tier');
-        }
+        $tier = $this->resolveTier($tierAmount, $userUuid);
 
         do {
             $paymentUuid = (string) Str::uuid();
@@ -118,11 +131,7 @@ class DonationPaymentService
      */
     public function createSbpPayment(string $userUuid, int $tierAmount, ?string $app = null): array
     {
-        $tier = config("donations.tiers.{$tierAmount}");
-
-        if ($tier === null) {
-            throw new \InvalidArgumentException('Invalid donation tier');
-        }
+        $tier = $this->resolveTier($tierAmount, $userUuid);
 
         do {
             $paymentUuid = (string) Str::uuid();

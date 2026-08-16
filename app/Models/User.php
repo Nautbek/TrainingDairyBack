@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'uuid',
         'ad_free_until',
+        'discount_percent',
     ];
 
     /**
@@ -46,6 +47,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'ad_free_until' => 'datetime',
+            'discount_percent' => 'integer',
         ];
     }
 }
