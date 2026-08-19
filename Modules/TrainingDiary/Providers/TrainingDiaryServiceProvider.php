@@ -12,10 +12,10 @@ use Illuminate\Support\ServiceProvider;
  * deleting the Modules/TrainingDiary folder plus that one registration
  * line removes every trace of the module from the running app.
  *
- * Training Diary has no API of its own yet (it only uses the core
- * feedback-chat endpoints: /api/feedback/threads, .../messages), so this
- * module only carries the admin panel for those threads, scoped to
- * app = config('trainingdiary.app_package').
+ * Besides the admin panel, it carries the /api/training-diary/* sync
+ * endpoints (exercise + approach log entries); the app also uses the core
+ * feedback-chat endpoints (/api/feedback/threads, .../messages), which
+ * live outside this module.
  */
 class TrainingDiaryServiceProvider extends ServiceProvider
 {
@@ -26,6 +26,10 @@ class TrainingDiaryServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Route::middleware('api')
+            ->prefix('api')
+            ->group(__DIR__.'/../routes/api.php');
+
         Route::middleware('web')
             ->prefix('training-admin32446234562345345')
             ->group(__DIR__.'/../routes/admin.php');
