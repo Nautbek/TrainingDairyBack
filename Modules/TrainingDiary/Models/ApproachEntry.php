@@ -12,10 +12,12 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $uuid
  * @property int $exercise_id
- * @property float $weight
- * @property int $repeat_count
+ * @property float|null $weight
+ * @property int|null $repeat_count
  * @property string|null $comment
  * @property int|null $client_id
+ * @property int|null $duration_seconds
+ * @property float|null $distance_meters
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -30,6 +32,8 @@ class ApproachEntry extends Model
         'repeat_count',
         'comment',
         'client_id',
+        'duration_seconds',
+        'distance_meters',
     ];
 
     protected function casts(): array
@@ -37,6 +41,8 @@ class ApproachEntry extends Model
         return [
             'weight' => 'float',
             'repeat_count' => 'integer',
+            'duration_seconds' => 'integer',
+            'distance_meters' => 'float',
         ];
     }
 

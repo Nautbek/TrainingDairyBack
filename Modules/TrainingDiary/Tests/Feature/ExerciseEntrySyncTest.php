@@ -53,4 +53,62 @@ class ExerciseEntrySyncTest extends TestCase
 
         $response->assertStatus(401)->assertJson(['error' => 'Unauthorized']);
     }
+
+    /** Старый клиент без measurement_type/duration_seconds/distance_meters — должен приниматься как раньше. */
+    public function test_store_exercise_accepts_legacy_payload_without_measurement_fields(): void
+    {
+        $uuid = $this->postJson('/api/register')->json('uuid');
+
+        $response = $this->postJson('/api/training-diary/exercises', [
+            'uuid' => $uuid,
+            'title' => 'Жим лёжа',
+            'logged_at' => '2026-08-19T10:15:00Z',
+            'client_id' => 124,
+            'approaches' => [
+                ['weight' => 60, 'repeat_count' => 8, 'comment' => null, 'client_id' => 1],
+            ],
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('training_diary_exercises', [
+            'uuid' => $response->json('uuid'),
+            'measurement_type' => 'reps',
+        ]);
+
+        $this->assertDatabaseHas('training_diary_approaches', [
+            'weight' => 60,
+            'repeat_count' => 8,
+            'duration_seconds' => null,
+            'distance_meters' => null,
+        ]);
+    }
+
+    /** Упражнение типа "distance" — вес/повторы отсутствуют, вместо них дистанция и время. */
+    public function test_store_exercise_accepts_distance_measurement_type(): void
+    {
+        $uuid = $this->postJson('/api/register')->json('uuid');
+
+        $response = $this->postJson('/api/training-diary/exercises', [
+            'uuid' => $uuid,
+            'title' => 'Бег',
+            'logged_at' => '2026-08-19T10:15:00Z',
+            'measurement_type' => 'distance',
+            'approaches' => [
+                ['duration_seconds' => 1800, 'distance_meters' => 5200.5, 'client_id' => 1],
+            ],
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('training_diary_exercises', [
+            'uuid' => $response->json('uuid'),
+            'measurement_type' => 'distance',
+        ]);
+
+        $this->assertDatabaseHas('training_diary_approaches', [
+            'duration_seconds' => 1800,
+            'distance_meters' => 5200.5,
+        ]);
+    }
 }

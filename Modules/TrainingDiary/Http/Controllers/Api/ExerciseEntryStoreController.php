@@ -45,6 +45,7 @@ class ExerciseEntryStoreController extends Controller
                     'title' => $validated['title'],
                     'logged_at' => $validated['logged_at'],
                     'client_id' => $validated['client_id'] ?? null,
+                    'measurement_type' => $validated['measurement_type'] ?? 'reps',
                 ]);
 
                 foreach ($validated['approaches'] ?? [] as $approach) {
@@ -52,12 +53,17 @@ class ExerciseEntryStoreController extends Controller
                         $approachUuid = (string) Str::uuid();
                     } while (ApproachEntry::query()->where('uuid', $approachUuid)->exists());
 
+                    // weight/repeat_count остаются NOT NULL в БД (миграция их не меняла) —
+                    // для time/distance подходов, где их нет в payload'е, пишем 0, как и
+                    // клиент, который для не-reps типов сам подставляет 0f/0.
                     $exercise->approaches()->create([
                         'uuid' => $approachUuid,
-                        'weight' => $approach['weight'],
-                        'repeat_count' => $approach['repeat_count'],
+                        'weight' => $approach['weight'] ?? 0,
+                        'repeat_count' => $approach['repeat_count'] ?? 0,
                         'comment' => $approach['comment'] ?? null,
                         'client_id' => $approach['client_id'] ?? null,
+                        'duration_seconds' => $approach['duration_seconds'] ?? null,
+                        'distance_meters' => $approach['distance_meters'] ?? null,
                     ]);
                 }
 

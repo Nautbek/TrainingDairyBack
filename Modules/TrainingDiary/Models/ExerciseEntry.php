@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property string $uuid
  * @property string $user_uuid
  * @property string $title
+ * @property string $measurement_type
  * @property Carbon $logged_at
  * @property int|null $client_id
  * @property Carbon|null $created_at
@@ -31,6 +32,7 @@ class ExerciseEntry extends Model
         'uuid',
         'user_uuid',
         'title',
+        'measurement_type',
         'logged_at',
         'client_id',
     ];

@@ -29,11 +29,14 @@ class StoreExerciseEntryRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'logged_at' => ['required', 'date'],
             'client_id' => ['nullable', 'integer', 'min:0'],
+            'measurement_type' => ['nullable', 'string', 'in:reps,time,distance'],
             'approaches' => ['array'],
-            'approaches.*.weight' => ['required_with:approaches', 'numeric', 'min:0'],
-            'approaches.*.repeat_count' => ['required_with:approaches', 'integer', 'min:0'],
+            'approaches.*.weight' => ['nullable', 'numeric', 'min:0'],
+            'approaches.*.repeat_count' => ['nullable', 'integer', 'min:0'],
             'approaches.*.comment' => ['nullable', 'string'],
             'approaches.*.client_id' => ['nullable', 'integer', 'min:0'],
+            'approaches.*.duration_seconds' => ['nullable', 'integer', 'min:0'],
+            'approaches.*.distance_meters' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }
