@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Продукты — админка</title>
+    <title>Блюда — админка</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
     <style>
@@ -18,16 +18,30 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 2rem 1rem 3rem;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 1rem;
         }
 
         h1 {
             font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 1rem;
         }
+
+        .nav-link {
+            font-size: 0.875rem;
+            color: #706f6c;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { color: #1b1b18; }
 
         .search-form {
             display: flex;
@@ -136,13 +150,13 @@
 
         .tab:not(.active) { opacity: 0.75; }
 
-        .product-list {
+        .dish-list {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
         }
 
-        .product-item {
+        .dish-item {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
@@ -153,20 +167,14 @@
             padding: 1rem 1.25rem;
         }
 
-        .product-item.saved {
+        .dish-item.saved {
             border-color: #86efac;
             background: #f0fdf4;
         }
 
-        .product-item.has-errors {
-            border-color: #fca5a5;
-            background: #fef2f2;
-        }
-
-        .product-info { flex: 1; min-width: 0; }
+        .dish-info { flex: 1; min-width: 0; }
 
         .field-input,
-        .field-textarea,
         .field-select {
             width: 100%;
             padding: 0.375rem 0.5rem;
@@ -179,7 +187,6 @@
         }
 
         .field-input:focus,
-        .field-textarea:focus,
         .field-select:focus {
             outline: none;
             border-color: #a8a7a4;
@@ -191,41 +198,12 @@
             margin-bottom: 0.375rem;
         }
 
-        .field-textarea {
-            font-size: 0.8125rem;
-            color: #706f6c;
-            margin-bottom: 0.375rem;
-            resize: vertical;
-            min-height: 2.25rem;
-        }
-
-        .macros-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem 0.75rem;
-            margin-bottom: 0.375rem;
-        }
-
-        .macro-field {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.75rem;
-            color: #706f6c;
-        }
-
-        .macro-field .field-input {
-            width: 4.5rem;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.375rem;
-        }
-
         .meta-row {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem 0.75rem;
             align-items: center;
-            margin-top: 0.375rem;
+            margin: 0.375rem 0;
         }
 
         .meta-field {
@@ -244,13 +222,50 @@
             min-width: 6rem;
         }
 
-        .meta-field .field-input--barcode { min-width: 9rem; }
+        .meta-field .field-input--water { min-width: 5rem; }
         .meta-field .field-input--uuid { min-width: 14rem; font-family: ui-monospace, monospace; }
 
-        .field-error {
+        .computed-totals {
+            font-size: 0.75rem;
+            color: #706f6c;
+            margin: 0.375rem 0;
+        }
+
+        .ingredients-title {
             font-size: 0.6875rem;
+            color: #a8a7a4;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin: 0.5rem 0 0.25rem;
+        }
+
+        .ingredient-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            align-items: center;
+            margin-bottom: 0.375rem;
+        }
+
+        .ingredient-row .field-input--ing-name { flex: 1; min-width: 8rem; font-size: 0.8125rem; }
+        .ingredient-row .field-input--ing-macro { width: 4.5rem; font-size: 0.75rem; }
+
+        .ingredient-remove-btn {
+            border: none;
+            background: transparent;
             color: #dc2626;
-            margin-top: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .ingredient-add-btn {
+            font-size: 0.75rem;
+            color: #2563eb;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem 0;
         }
 
         .flash {
@@ -272,33 +287,7 @@
             border: 1px solid #fca5a5;
         }
 
-        .product-name {
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .product-desc {
-            font-size: 0.8125rem;
-            color: #706f6c;
-            margin-bottom: 0.375rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .product-macros {
-            font-size: 0.75rem;
-            color: #706f6c;
-        }
-
-        .product-meta {
-            font-size: 0.6875rem;
-            color: #a8a7a4;
-            margin-top: 0.375rem;
-        }
-
-        .product-actions {
+        .dish-actions {
             display: flex;
             align-items: center;
             gap: 0.25rem;
@@ -321,25 +310,10 @@
 
         .action-btn:hover { background: #f5f5f3; }
 
-        .approve-btn:hover {
-            color: #16a34a;
-            background: #dcfce7;
-        }
-
-        .decline-btn:hover {
-            color: #dc2626;
-            background: #fee2e2;
-        }
-
-        .delete-btn:hover {
-            color: #ef4444;
-            background: #fef2f2;
-        }
-
-        .save-btn:hover {
-            color: #2563eb;
-            background: #dbeafe;
-        }
+        .approve-btn:hover { color: #16a34a; background: #dcfce7; }
+        .decline-btn:hover { color: #dc2626; background: #fee2e2; }
+        .delete-btn:hover { color: #ef4444; background: #fef2f2; }
+        .save-btn:hover { color: #2563eb; background: #dbeafe; }
 
         .empty {
             text-align: center;
@@ -383,13 +357,13 @@
 </head>
 <body>
     <div class="container">
-        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;">
-            <h1 style="margin-bottom:0;">Продукты</h1>
-            <a href="{{ route('admin.dishes.index', [], false) }}" style="font-size:0.875rem;color:#706f6c;text-decoration:none;">Блюда →</a>
+        <div class="page-header">
+            <h1>Блюда</h1>
+            <a class="nav-link" href="{{ route('admin.products.index', [], false) }}">← Продукты</a>
         </div>
 
-        @if (session('saved_product_id'))
-            <div class="flash flash-success">Продукт #{{ session('saved_product_id') }} сохранён</div>
+        @if (session('saved_dish_id'))
+            <div class="flash flash-success">Блюдо #{{ session('saved_dish_id') }} сохранено</div>
         @endif
 
         @if ($errors->any())
@@ -400,7 +374,7 @@
             </div>
         @endif
 
-        <form class="search-form" method="GET" action="{{ route('admin.products.index', [], false) }}">
+        <form class="search-form" method="GET" action="{{ route('admin.dishes.index', [], false) }}">
             <input type="hidden" name="status" value="{{ $currentStatus }}">
             <input
                 class="search-input"
@@ -413,7 +387,7 @@
             @if ($search !== '')
                 <a
                     class="search-reset"
-                    href="{{ route('admin.products.index', ['status' => $currentStatus], false) }}"
+                    href="{{ route('admin.dishes.index', ['status' => $currentStatus], false) }}"
                 >Сброс</a>
             @endif
         </form>
@@ -429,7 +403,7 @@
 
             @foreach ($tabs as $value => $tab)
                 <a
-                    href="{{ route('admin.products.index', array_filter(['status' => $value, 'name' => $search ?: null]), false) }}"
+                    href="{{ route('admin.dishes.index', array_filter(['status' => $value, 'name' => $search ?: null]), false) }}"
                     class="tab {{ $tab['class'] }} {{ $currentStatus === $value ? 'active' : '' }}"
                 >
                     {{ $tab['label'] }}
@@ -440,87 +414,49 @@
             @endforeach
         </nav>
 
-        @if ($products->total() > 0)
+        @if ($dishes->total() > 0)
             <div class="list-meta">
-                {{ $products->firstItem() }}–{{ $products->lastItem() }} из {{ $products->total() }}
+                {{ $dishes->firstItem() }}–{{ $dishes->lastItem() }} из {{ $dishes->total() }}
                 @if ($search !== '')
                     · поиск: «{{ $search }}»
                 @endif
             </div>
 
-            <div class="product-list">
-                @foreach ($products as $product)
-                    @php
-                        $editing = (int) old('_product_id') === $product->id;
-                        $val = fn (string $field) => $editing ? old($field, $product->{$field}) : $product->{$field};
-                        $statusValue = $editing ? (int) old('status', $product->status->value) : $product->status->value;
-                    @endphp
-                    <div @class([
-                        'product-item',
-                        'saved' => session('saved_product_id') === $product->id,
-                        'has-errors' => $editing && $errors->any(),
-                    ])>
+            <div class="dish-list">
+                @foreach ($dishes as $dish)
+                    <div @class(['dish-item', 'saved' => session('saved_dish_id') === $dish->id])>
                         <form
-                            id="product-form-{{ $product->id }}"
-                            class="product-info"
+                            id="dish-form-{{ $dish->id }}"
+                            class="dish-info"
                             method="POST"
-                            action="{{ route('admin.products.update', $product, false) }}"
+                            action="{{ route('admin.dishes.update', $dish, false) }}"
                         >
                             @csrf
-                            <input type="hidden" name="_product_id" value="{{ $product->id }}">
+                            <input type="hidden" name="_dish_id" value="{{ $dish->id }}">
 
                             <input
                                 class="field-input field-input--name"
                                 type="text"
                                 name="name"
-                                value="{{ $val('name') }}"
+                                value="{{ $dish->name }}"
                                 required
                             >
-                            @if ($editing && $errors->has('name'))
-                                <div class="field-error">{{ $errors->first('name') }}</div>
-                            @endif
-
-                            <textarea
-                                class="field-textarea"
-                                name="description"
-                                placeholder="Описание"
-                                rows="2"
-                            >{{ $val('description') }}</textarea>
-
-                            <div class="macros-row">
-                                <label class="macro-field">
-                                    Б
-                                    <input class="field-input" type="number" name="proteins" value="{{ $val('proteins') }}" min="0" step="0.01" required>
-                                </label>
-                                <label class="macro-field">
-                                    Ж
-                                    <input class="field-input" type="number" name="fats" value="{{ $val('fats') }}" min="0" step="0.01" required>
-                                </label>
-                                <label class="macro-field">
-                                    У
-                                    <input class="field-input" type="number" name="carbs" value="{{ $val('carbs') }}" min="0" step="0.01" required>
-                                </label>
-                                <label class="macro-field">
-                                    ккал
-                                    <input class="field-input" type="number" name="calories" value="{{ $val('calories') }}" min="0" step="0.01" required>
-                                </label>
-                            </div>
 
                             <div class="meta-row">
-                                <span class="meta-field">#{{ $product->id }}</span>
+                                <span class="meta-field">#{{ $dish->id }}</span>
                                 <label class="meta-field">
-                                    штрихкод
-                                    <input class="field-input field-input--barcode" type="text" name="barcode" value="{{ $val('barcode') }}">
+                                    вода, г
+                                    <input class="field-input field-input--water" type="number" name="water_grams" value="{{ $dish->water_grams }}" min="0" step="0.01" required>
                                 </label>
                                 <label class="meta-field">
                                     автор
-                                    <input class="field-input field-input--uuid" type="text" name="author_uuid" value="{{ $val('author_uuid') }}" required>
+                                    <input class="field-input field-input--uuid" type="text" name="author_uuid" value="{{ $dish->author_uuid }}" required>
                                 </label>
                                 <label class="meta-field">
                                     статус
                                     <select class="field-select" name="status">
                                         @foreach ([ProductStatus::Draft, ProductStatus::Active, ProductStatus::Decline] as $statusOption)
-                                            <option value="{{ $statusOption->value }}" @selected($statusValue === $statusOption->value)>
+                                            <option value="{{ $statusOption->value }}" @selected($dish->status === $statusOption)>
                                                 {{ match ($statusOption) {
                                                     ProductStatus::Draft => 'Черновик',
                                                     ProductStatus::Active => 'Активный',
@@ -530,17 +466,34 @@
                                         @endforeach
                                     </select>
                                 </label>
-                                <span class="meta-field">{{ $product->created_at?->format('d.m.Y H:i') }}</span>
+                                <span class="meta-field">{{ $dish->created_at?->format('d.m.Y H:i') }}</span>
                             </div>
+
+                            <div class="computed-totals">
+                                На 100г (пересчитывается при сохранении): {{ $dish->calories }} ккал ·
+                                Б {{ $dish->proteins }} · Ж {{ $dish->fats }} · У {{ $dish->carbs }} ·
+                                итого {{ $dish->total_grams }} г
+                            </div>
+
+                            <div class="ingredients-title">Состав</div>
+                            <div class="ingredients-list" data-ingredients>
+                                @foreach ($dish->ingredients as $index => $ingredient)
+                                    <div class="ingredient-row" data-ingredient-row>
+                                        <input class="field-input field-input--ing-name" type="text" name="ingredients[{{ $index }}][name]" value="{{ $ingredient->name }}" placeholder="Название" required>
+                                        <input class="field-input field-input--ing-macro" type="number" name="ingredients[{{ $index }}][proteins]" value="{{ $ingredient->proteins }}" placeholder="Б" min="0" step="0.01" required>
+                                        <input class="field-input field-input--ing-macro" type="number" name="ingredients[{{ $index }}][fats]" value="{{ $ingredient->fats }}" placeholder="Ж" min="0" step="0.01" required>
+                                        <input class="field-input field-input--ing-macro" type="number" name="ingredients[{{ $index }}][carbs]" value="{{ $ingredient->carbs }}" placeholder="У" min="0" step="0.01" required>
+                                        <input class="field-input field-input--ing-macro" type="number" name="ingredients[{{ $index }}][grams]" value="{{ $ingredient->grams }}" placeholder="Грамм" min="0.01" step="0.01" required>
+                                        <input type="hidden" name="ingredients[{{ $index }}][product_uuid]" value="{{ $ingredient->product_uuid }}">
+                                        <button type="button" class="ingredient-remove-btn" data-remove-ingredient title="Удалить ингредиент">✕</button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" class="ingredient-add-btn" data-add-ingredient data-form-id="dish-form-{{ $dish->id }}">+ добавить ингредиент</button>
                         </form>
 
-                        <div class="product-actions">
-                            <button
-                                type="submit"
-                                form="product-form-{{ $product->id }}"
-                                class="action-btn save-btn"
-                                title="Сохранить"
-                            >
+                        <div class="dish-actions">
+                            <button type="submit" form="dish-form-{{ $dish->id }}" class="action-btn save-btn" title="Сохранить">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                                     <polyline points="17 21 17 13 7 13 7 21"></polyline>
@@ -549,7 +502,7 @@
                             </button>
 
                             @if ($currentStatus === ProductStatus::Draft->value)
-                                <form method="POST" action="{{ route('admin.products.approve', $product, false) }}">
+                                <form method="POST" action="{{ route('admin.dishes.approve', $dish, false) }}">
                                     @csrf
                                     <button type="submit" class="action-btn approve-btn" title="Одобрить">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -557,7 +510,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.products.decline', $product, false) }}">
+                                <form method="POST" action="{{ route('admin.dishes.decline', $dish, false) }}">
                                     @csrf
                                     <button type="submit" class="action-btn decline-btn" title="Отклонить">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -570,8 +523,8 @@
 
                             <form
                                 method="POST"
-                                action="{{ route('admin.products.destroy', $product, false) }}"
-                                onsubmit="return confirm('Удалить «{{ $product->name }}»?')"
+                                action="{{ route('admin.dishes.destroy', $dish, false) }}"
+                                onsubmit="return confirm('Удалить «{{ $dish->name }}»?')"
                             >
                                 @csrf
                                 <button type="submit" class="action-btn delete-btn" title="Удалить">
@@ -588,16 +541,49 @@
                 @endforeach
             </div>
 
-            {{ $products->links('nutrition::admin.partials.pagination') }}
+            {{ $dishes->links('nutrition::admin.partials.pagination') }}
         @else
             <div class="empty">
                 @if ($search !== '')
                     Ничего не найдено по запросу «{{ $search }}»
                 @else
-                    Нет продуктов в этой категории
+                    Нет блюд в этой категории
                 @endif
             </div>
         @endif
     </div>
+
+    <script>
+        document.addEventListener('click', function (event) {
+            var addBtn = event.target.closest('[data-add-ingredient]');
+            if (addBtn) {
+                var form = document.getElementById(addBtn.dataset.formId);
+                var list = form.querySelector('[data-ingredients]');
+                var index = list.querySelectorAll('[data-ingredient-row]').length;
+                var row = document.createElement('div');
+                row.className = 'ingredient-row';
+                row.setAttribute('data-ingredient-row', '');
+                row.innerHTML =
+                    '<input class="field-input field-input--ing-name" type="text" name="ingredients[' + index + '][name]" placeholder="Название" required>' +
+                    '<input class="field-input field-input--ing-macro" type="number" name="ingredients[' + index + '][proteins]" placeholder="Б" min="0" step="0.01" required>' +
+                    '<input class="field-input field-input--ing-macro" type="number" name="ingredients[' + index + '][fats]" placeholder="Ж" min="0" step="0.01" required>' +
+                    '<input class="field-input field-input--ing-macro" type="number" name="ingredients[' + index + '][carbs]" placeholder="У" min="0" step="0.01" required>' +
+                    '<input class="field-input field-input--ing-macro" type="number" name="ingredients[' + index + '][grams]" placeholder="Грамм" min="0.01" step="0.01" required>' +
+                    '<input type="hidden" name="ingredients[' + index + '][product_uuid]" value="">' +
+                    '<button type="button" class="ingredient-remove-btn" data-remove-ingredient title="Удалить ингредиент">✕</button>';
+                list.appendChild(row);
+                return;
+            }
+
+            var removeBtn = event.target.closest('[data-remove-ingredient]');
+            if (removeBtn) {
+                var thisRow = removeBtn.closest('[data-ingredient-row]');
+                var thisList = removeBtn.closest('[data-ingredients]');
+                if (thisList.querySelectorAll('[data-ingredient-row]').length > 1) {
+                    thisRow.remove();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
