@@ -112,89 +112,16 @@ class ExerciseEntrySyncTest extends TestCase
         ]);
     }
 
-    public function test_index_returns_uploaded_exercises_with_approaches(): void
-    {
-        $uuid = $this->postJson('/api/register')->json('uuid');
-
-        $this->postJson('/api/training-diary/exercises', [
-            'uuid' => $uuid,
-            'title' => 'Жим лёжа',
-            'logged_at' => '2026-08-19T10:15:00Z',
-            'client_id' => 123,
-            'approaches' => [
-                ['weight' => 60, 'repeat_count' => 8, 'comment' => null, 'client_id' => 1],
-            ],
-        ]);
-
-        $response = $this->getJson('/api/training-diary/exercises?uuid='.$uuid);
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'server_time',
-                'exercises' => [['uuid', 'title', 'measurement_type', 'logged_at', 'created_at', 'approaches']],
-            ]);
-
-        $this->assertSame('Жим лёжа', $response->json('exercises.0.title'));
-        // json() decodes 60.0 back as an int when it round-trips as an integral value.
-        $this->assertEquals(60.0, $response->json('exercises.0.approaches.0.weight'));
-        $this->assertSame(8, $response->json('exercises.0.approaches.0.repeat_count'));
-    }
-
     /**
-     * created_at (server sync time), not logged_at (user-entered workout time), drives the
-     * filter — a backdated entry synced "now" must still show up on a pull started "now".
+     * GET /training-diary/exercises (pull side) is deliberately unrouted — see
+     * Modules/TrainingDiary/routes/api.php. It read a user's whole history by bare uuid
+     * with no proof of ownership. ExerciseEntryIndexController and its tests are gone from
+     * here until it's re-enabled behind real per-device auth.
      */
-    public function test_index_filters_by_since(): void
-    {
-        $uuid = $this->postJson('/api/register')->json('uuid');
-
-        \Illuminate\Support\Carbon::setTestNow('2026-08-19T10:00:00Z');
-        $this->postJson('/api/training-diary/exercises', [
-            'uuid' => $uuid,
-            'title' => 'Присед',
-            'logged_at' => '2026-08-01T10:15:00Z',
-        ]);
-
-        $cutoff = '2026-08-19T10:05:00Z';
-
-        \Illuminate\Support\Carbon::setTestNow('2026-08-19T10:10:00Z');
-        $this->postJson('/api/training-diary/exercises', [
-            'uuid' => $uuid,
-            // Logged in the past, synced after the cutoff — must still appear.
-            'title' => 'Тяга',
-            'logged_at' => '2026-07-01T10:15:00Z',
-        ]);
-        \Illuminate\Support\Carbon::setTestNow();
-
-        $response = $this->getJson('/api/training-diary/exercises?uuid='.$uuid.'&since='.$cutoff);
-
-        $response->assertStatus(200);
-        $titles = collect($response->json('exercises'))->pluck('title');
-        $this->assertFalse($titles->contains('Присед'));
-        $this->assertTrue($titles->contains('Тяга'));
-    }
-
-    public function test_index_returns_unauthorized_for_unknown_user(): void
+    public function test_get_training_diary_exercises_is_not_routed(): void
     {
         $response = $this->getJson('/api/training-diary/exercises?uuid=550e8400-e29b-41d4-a716-446655440000');
 
-        $response->assertStatus(401)->assertJson(['error' => 'Unauthorized']);
-    }
-
-    public function test_index_only_returns_own_user_exercises(): void
-    {
-        $uuidA = $this->postJson('/api/register')->json('uuid');
-        $uuidB = $this->postJson('/api/register')->json('uuid');
-
-        $this->postJson('/api/training-diary/exercises', [
-            'uuid' => $uuidA,
-            'title' => 'Жим лёжа',
-            'logged_at' => '2026-08-19T10:15:00Z',
-        ]);
-
-        $response = $this->getJson('/api/training-diary/exercises?uuid='.$uuidB);
-
-        $response->assertStatus(200);
-        $this->assertCount(0, $response->json('exercises'));
+        $response->assertStatus(405);
     }
 }
