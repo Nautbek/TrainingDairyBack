@@ -11,8 +11,13 @@ use Illuminate\Support\Carbon;
 /**
  * One workout-log entry synced from a device: "user did exercise X at time T".
  * Mirrors the client's ExerciseHistory Room entity — [[title]] is denormalized
- * from the device's local exercise catalog (which never leaves the device),
- * so this table only exists for future analysis, not as a source of truth.
+ * from the device's local exercise catalog (which never leaves the device).
+ *
+ * Also the source of truth for the cross-device sync feature: a second
+ * device pulls these rows back via GET /api/training-diary/exercises and
+ * find-or-creates a local Exercise by (title, measurement_type) to attach
+ * them to, since the original local exercise id never leaves the device
+ * that created it.
  *
  * @property int $id
  * @property string $uuid
