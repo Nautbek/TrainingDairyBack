@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\RegisterWithEmailController;
+use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\Donation\ConfirmDonationController;
 use App\Http\Controllers\Api\Donation\CreateDonationController;
 use App\Http\Controllers\Api\Donation\DonationPaymentStatusController;
@@ -36,6 +38,8 @@ Route::post('/user_feedback', UserFeedbackController::class);
 // по-настоящему новая угроза, которую вводит пароль (подбор).
 Route::post('/auth/register', RegisterWithEmailController::class);
 Route::post('/auth/login', LoginController::class)->middleware('throttle:5,1');
+Route::post('/auth/forgot-password', ForgotPasswordController::class)->middleware('throttle:5,1');
+Route::post('/auth/reset-password', ResetPasswordController::class)->middleware('throttle:10,1');
 
 // Фидбек-чат: треды обращений + сообщения. Отдельно от /user_feedback выше,
 // которая остаётся каналом для activity-пингов (см. Modules/*/… и Helper).
