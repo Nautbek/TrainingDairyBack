@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\Auth\RegisterWithEmailController;
 use App\Http\Controllers\Api\Donation\ConfirmDonationController;
 use App\Http\Controllers\Api\Donation\CreateDonationController;
 use App\Http\Controllers\Api\Donation\DonationPaymentStatusController;
@@ -26,6 +28,14 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', RegisterController::class);
 Route::post('/user_open', UserOpenController::class);
 Route::post('/user_feedback', UserFeedbackController::class);
+
+// Email+пароль — см. план "Аккаунт по email". Уживается с анонимным /register выше:
+// клиент либо создаёт новый uuid прямо с реальными email/password (мандатор для новых
+// установок), либо подсовывает уже существующий локальный uuid, чтобы привязать email к
+// нему (необязательный баннер для уже установленных). Throttle на /auth/login — единственная
+// по-настоящему новая угроза, которую вводит пароль (подбор).
+Route::post('/auth/register', RegisterWithEmailController::class);
+Route::post('/auth/login', LoginController::class)->middleware('throttle:5,1');
 
 // Фидбек-чат: треды обращений + сообщения. Отдельно от /user_feedback выше,
 // которая остаётся каналом для activity-пингов (см. Modules/*/… и Helper).

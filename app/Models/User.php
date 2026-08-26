@@ -50,4 +50,15 @@ class User extends Authenticatable
             'discount_percent' => 'integer',
         ];
     }
+
+    /**
+     * RegisterController fills email/password with placeholders ({uuid}@temp.local + a
+     * random password) just to satisfy the NOT NULL/UNIQUE columns for anonymous uuid-only
+     * accounts — this is the only way to tell "never attached a real email" apart from "has
+     * a real login" without a separate boolean column.
+     */
+    public function hasEmailLogin(): bool
+    {
+        return $this->email !== $this->uuid.'@temp.local';
+    }
 }
