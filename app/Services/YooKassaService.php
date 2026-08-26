@@ -39,7 +39,7 @@ class YooKassaService
                 'type' => ConfirmationType::REDIRECT,
                 'return_url' => (string) config('services.yookassa.return_url'),
             ],
-            'description' => "Поддержка приложения — {$payment->months} мес. без рекламы",
+            'description' => "Поддержка проекта — {$payment->months} мес. подписки",
             'metadata' => $this->donationMetadata($payment),
         ];
 
@@ -58,7 +58,7 @@ class YooKassaService
             ],
             'capture' => true,
             'payment_token' => $paymentToken,
-            'description' => "Поддержка приложения — {$payment->months} мес. без рекламы",
+            'description' => "Поддержка проекта — {$payment->months} мес. подписки",
             'metadata' => $this->donationMetadata($payment),
         ];
 
@@ -80,7 +80,7 @@ class YooKassaService
                 'type' => ConfirmationType::REDIRECT,
                 'return_url' => (string) config('services.yookassa.return_url'),
             ],
-            'description' => "Поддержка приложения — {$payment->months} мес. без рекламы",
+            'description' => "Поддержка проекта — {$payment->months} мес. подписки",
             'metadata' => $this->donationMetadata($payment),
         ];
 
