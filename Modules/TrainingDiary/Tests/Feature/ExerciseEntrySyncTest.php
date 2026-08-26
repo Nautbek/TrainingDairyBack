@@ -2,6 +2,7 @@
 
 namespace Modules\TrainingDiary\Tests\Feature;
 
+use App\Models\DeviceToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -112,16 +113,80 @@ class ExerciseEntrySyncTest extends TestCase
         ]);
     }
 
-    /**
-     * GET /training-diary/exercises (pull side) is deliberately unrouted — see
-     * Modules/TrainingDiary/routes/api.php. It read a user's whole history by bare uuid
-     * with no proof of ownership. ExerciseEntryIndexController and its tests are gone from
-     * here until it's re-enabled behind real per-device auth.
-     */
-    public function test_get_training_diary_exercises_is_not_routed(): void
+    /** (string) на mixed из json() не проходит phpstan level 9 (может быть массивом/объектом
+     * без __toString) — is_string() честно сужает тип, без притворного каста. */
+    private function registerUuid(): string
     {
-        $response = $this->getJson('/api/training-diary/exercises?uuid=550e8400-e29b-41d4-a716-446655440000');
+        $uuid = $this->postJson('/api/register')->json('uuid');
 
-        $response->assertStatus(405);
+        if (! is_string($uuid)) {
+            $this->fail('Expected /api/register to return a string uuid.');
+        }
+
+        return $uuid;
+    }
+
+    public function test_pull_returns_history_with_valid_device_token(): void
+    {
+        $uuid = $this->registerUuid();
+        $deviceToken = DeviceToken::issueFor($uuid)->token;
+
+        $this->postJson('/api/training-diary/exercises', [
+            'uuid' => $uuid,
+            'title' => 'Жим лёжа',
+            'logged_at' => '2026-08-19T10:15:00Z',
+            'client_id' => 1,
+            'approaches' => [
+                ['weight' => 60, 'repeat_count' => 8, 'comment' => null, 'client_id' => 1],
+            ],
+        ]);
+
+        $response = $this->getJson(
+            "/api/training-diary/exercises?uuid={$uuid}",
+            ['X-Device-Token' => $deviceToken],
+        );
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['server_time', 'exercises' => [['uuid', 'title', 'approaches']]]);
+        /** @var array<mixed> $exercises */
+        $exercises = $response->json('exercises');
+        $this->assertCount(1, $exercises);
+    }
+
+    public function test_pull_rejects_missing_device_token(): void
+    {
+        $uuid = $this->registerUuid();
+
+        $response = $this->getJson("/api/training-diary/exercises?uuid={$uuid}");
+
+        $response->assertStatus(422)->assertJsonValidationErrors('device_token');
+    }
+
+    public function test_pull_rejects_wrong_device_token(): void
+    {
+        $uuid = $this->registerUuid();
+        DeviceToken::issueFor($uuid);
+
+        $response = $this->getJson(
+            "/api/training-diary/exercises?uuid={$uuid}",
+            ['X-Device-Token' => 'not-the-real-token'],
+        );
+
+        $response->assertStatus(401)->assertJson(['error' => 'invalid_device_token']);
+    }
+
+    /** Токен, выданный другому аккаунту, не должен открывать чужую историю. */
+    public function test_pull_rejects_device_token_belonging_to_another_account(): void
+    {
+        $uuid = $this->registerUuid();
+        $otherUuid = $this->registerUuid();
+        $otherDeviceToken = DeviceToken::issueFor($otherUuid)->token;
+
+        $response = $this->getJson(
+            "/api/training-diary/exercises?uuid={$uuid}",
+            ['X-Device-Token' => $otherDeviceToken],
+        );
+
+        $response->assertStatus(401)->assertJson(['error' => 'invalid_device_token']);
     }
 }

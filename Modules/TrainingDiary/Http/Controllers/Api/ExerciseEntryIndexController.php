@@ -3,6 +3,7 @@
 namespace Modules\TrainingDiary\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DeviceToken;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -20,16 +21,26 @@ use Modules\TrainingDiary\Models\ExerciseEntry;
  *
  * `server_time` in the response is the cursor the client should persist for
  * its next call — never the device's own clock, to avoid clock-skew gaps.
+ *
+ * Re-enabled behind `device_token` (see "Аккаунт по email" plan) — this route was
+ * unrouted for a while because uuid alone isn't a secret (shown in-app, could leak via
+ * a screenshot); DeviceToken proves this specific device actually authenticated
+ * (register/login/reset-password), not just that it knows someone's uuid.
  */
 class ExerciseEntryIndexController extends Controller
 {
     public function __invoke(IndexExerciseEntryRequest $request): JsonResponse
     {
         $uuid = $request->string('uuid')->toString();
+        $deviceToken = $request->string('device_token')->toString();
         $since = $request->string('since')->toString();
 
         if (! User::query()->where('uuid', $uuid)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        if (! DeviceToken::query()->where('user_uuid', $uuid)->where('token', $deviceToken)->exists()) {
+            return response()->json(['error' => 'invalid_device_token'], 401);
         }
 
         // Read the cutoff before running the query so nothing created while the

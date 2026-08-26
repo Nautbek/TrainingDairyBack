@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\TrainingDiary\Http\Controllers\Api\ExerciseEntryIndexController;
 use Modules\TrainingDiary\Http\Controllers\Api\ExerciseEntryStoreController;
 
 /*
@@ -9,15 +10,16 @@ use Modules\TrainingDiary\Http\Controllers\Api\ExerciseEntryStoreController;
 |--------------------------------------------------------------------------
 | Loaded by Modules\TrainingDiary\Providers\TrainingDiaryServiceProvider
 | inside the main app's "api" route group (prefix /api, "api" middleware).
-| Only the upload side is live: the Android app's hourly catch-up worker
-| sends one not-yet-synced exercise (+ its approaches) per hour.
+| The Android app's hourly catch-up worker pushes one not-yet-synced
+| exercise (+ its approaches) at a time; GET is the pull side used for
+| cross-device sync ("Синхронизировать сейчас" on the Sync screen).
 |
-| GET (the pull side for cross-device sync — see ExerciseEntryIndexController,
-| still present but unrouted) is deliberately NOT registered: it read a
-| user's whole history by bare uuid with no proof of ownership — uuid isn't
-| a secret, it's shown in the app and could leak via a screenshot. Re-enable
-| only once there's real per-device auth (see the "Аккаунт по email" plan —
-| email+password, device tokens) to gate it.
+| GET was unrouted for a while: it read a user's whole history by bare uuid
+| with no proof of ownership — uuid isn't a secret, it's shown in the app and
+| could leak via a screenshot. Re-enabled now that the "Аккаунт по email"
+| plan's device tokens exist — see ExerciseEntryIndexController and
+| IndexExerciseEntryRequest, both gate on `device_token` too, not uuid alone.
 */
 
 Route::post('/training-diary/exercises', ExerciseEntryStoreController::class);
+Route::get('/training-diary/exercises', ExerciseEntryIndexController::class);
