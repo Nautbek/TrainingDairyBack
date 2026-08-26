@@ -1,0 +1,19 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+        - Modules
+        - routes
+        - database
+        - config
+
+    level: 9
+
+    excludePaths:
+        - */Database/Migrations/*
+        - */database/migrations/*
+        - */database/seeders/*
+        - */database/factories/*

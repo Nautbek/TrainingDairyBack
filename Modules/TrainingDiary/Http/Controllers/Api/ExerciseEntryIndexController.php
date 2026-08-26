@@ -25,9 +25,10 @@ class ExerciseEntryIndexController extends Controller
 {
     public function __invoke(IndexExerciseEntryRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        $uuid = $request->string('uuid')->toString();
+        $since = $request->string('since')->toString();
 
-        if (! User::query()->where('uuid', $validated['uuid'])->exists()) {
+        if (! User::query()->where('uuid', $uuid)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -37,14 +38,14 @@ class ExerciseEntryIndexController extends Controller
 
         $exercises = ExerciseEntry::query()
             ->with('approaches')
-            ->where('user_uuid', $validated['uuid'])
+            ->where('user_uuid', $uuid)
             ->when(
-                ! empty($validated['since']),
+                $since !== '',
                 // Pass a DateTimeInterface, not the raw string — the query grammar then
                 // formats it to match the column's stored format. Binding the ISO-8601
                 // string directly compares "2026-…T10:…Z" against a stored "2026-… 10:…"
                 // byte-for-byte, and ' ' sorts before 'T', so every row looks "too old".
-                fn ($query) => $query->where('created_at', '>=', Carbon::parse($validated['since'])),
+                fn ($query) => $query->where('created_at', '>=', Carbon::parse($since)),
             )
             ->orderBy('created_at')
             ->get();

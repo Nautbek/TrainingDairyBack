@@ -22,11 +22,20 @@ class LoginController extends Controller
 {
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        $email = $request->string('email')->toString();
+        $password = $request->string('password')->toString();
 
-        $user = User::query()->where('email', $validated['email'])->first();
+        $user = User::query()->where('email', $email)->first();
 
-        if ($user === null || ! $user->hasEmailLogin() || ! Hash::check($validated['password'], $user->password)) {
+        // uuid is nullable at the column level (pre-dates this app's uuid scheme) — every
+        // account created through our own controllers always has one, but a user row that
+        // somehow doesn't must not be allowed to log in and mint a token for a null identity.
+        if (
+            $user === null
+            || $user->uuid === null
+            || ! $user->hasEmailLogin()
+            || ! Hash::check($password, $user->password)
+        ) {
             return response()->json(['error' => 'invalid_credentials'], 401);
         }
 

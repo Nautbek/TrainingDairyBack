@@ -46,6 +46,9 @@ class ApproachEntry extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<ExerciseEntry, $this>
+     */
     public function exercise(): BelongsTo
     {
         return $this->belongsTo(ExerciseEntry::class, 'exercise_id');

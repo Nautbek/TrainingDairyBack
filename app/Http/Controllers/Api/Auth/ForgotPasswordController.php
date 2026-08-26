@@ -23,11 +23,9 @@ use Illuminate\Support\Facades\Hash;
  */
 class ForgotPasswordController extends Controller
 {
-    private const CODE_TTL_MINUTES = 30;
-
     public function __invoke(ForgotPasswordRequest $request): JsonResponse
     {
-        $email = $request->validated('email');
+        $email = $request->string('email')->toString();
         $user = User::query()->where('email', $email)->first();
 
         if ($user !== null && $user->hasEmailLogin()) {

@@ -27,9 +27,12 @@ class ResetPasswordController extends Controller
 
     public function __invoke(ResetPasswordRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        $email = $request->string('email')->toString();
+        $code = $request->string('code')->toString();
+        $password = $request->string('password')->toString();
 
-        $row = DB::table('password_reset_tokens')->where('email', $validated['email'])->first();
+        /** @var object{email: string, token: string, created_at: string}|null $row */
+        $row = DB::table('password_reset_tokens')->where('email', $email)->first();
 
         if ($row === null) {
             return response()->json(['error' => 'invalid_or_expired_code'], 400);
@@ -38,26 +41,26 @@ class ResetPasswordController extends Controller
         // diffInMinutes is signed (negative for a past date) in this Carbon version —
         // comparing isPast() on an explicit expiry instant avoids relying on its sign.
         $expired = Carbon::parse($row->created_at)->addMinutes(self::CODE_TTL_MINUTES)->isPast();
-        $codeMatches = Hash::check($validated['code'], $row->token);
+        $codeMatches = Hash::check($code, $row->token);
 
         if ($expired || ! $codeMatches) {
             if ($expired) {
-                DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+                DB::table('password_reset_tokens')->where('email', $email)->delete();
             }
 
             return response()->json(['error' => 'invalid_or_expired_code'], 400);
         }
 
-        $user = User::query()->where('email', $validated['email'])->first();
+        $user = User::query()->where('email', $email)->first();
 
-        if ($user === null) {
+        if ($user === null || $user->uuid === null) {
             return response()->json(['error' => 'invalid_or_expired_code'], 400);
         }
 
-        $user->password = Hash::make($validated['password']);
+        $user->password = Hash::make($password);
         $user->save();
 
-        DB::table('password_reset_tokens')->where('email', $validated['email'])->delete();
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
 
         $deviceToken = DeviceToken::issueFor($user->uuid);
 

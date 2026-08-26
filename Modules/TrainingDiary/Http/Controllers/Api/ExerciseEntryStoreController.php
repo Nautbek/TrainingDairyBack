@@ -48,7 +48,10 @@ class ExerciseEntryStoreController extends Controller
                     'measurement_type' => $validated['measurement_type'] ?? 'reps',
                 ]);
 
-                foreach ($validated['approaches'] ?? [] as $approach) {
+                /** @var array<int, array{weight?: float|int|null, repeat_count?: int|null, comment?: string|null, client_id?: int|null, duration_seconds?: int|null, distance_meters?: float|int|null}> $approaches */
+                $approaches = $validated['approaches'] ?? [];
+
+                foreach ($approaches as $approach) {
                     do {
                         $approachUuid = (string) Str::uuid();
                     } while (ApproachEntry::query()->where('uuid', $approachUuid)->exists());

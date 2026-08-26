@@ -1,0 +1,1309 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/MyCar/Http/Controllers/Api/ConfirmMyCarPaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:createPaymentWithToken\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Http/Controllers/Api/ConfirmMyCarPaymentController.php
+
+		-
+			message: '#^Parameter \#3 \$paymentToken of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:createPaymentWithToken\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Http/Controllers/Api/ConfirmMyCarPaymentController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: Modules/MyCar/Http/Controllers/Api/CreateMyCarPaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:createPayment\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Http/Controllers/Api/CreateMyCarPaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:createSbpPayment\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Http/Controllers/Api/CreateMyCarPaymentController.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: Modules/MyCar/Http/Controllers/Api/MyCarPaymentStatusController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Http/Requests/ConfirmMyCarPaymentRequest.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Http/Requests/CreateMyCarPaymentRequest.php
+
+		-
+			message: '#^Class Modules\\MyCar\\Models\\User not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: Modules/MyCar/Models/MyCarSubscription.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Models\\MyCarSubscription\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/MyCar/Models/MyCarSubscription.php
+
+		-
+			message: '#^Parameter \#1 \$related of method Illuminate\\Database\\Eloquent\\Model\:\:belongsTo\(\) expects class\-string\<Illuminate\\Database\\Eloquent\\Model\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Models/MyCarSubscription.php
+
+		-
+			message: '#^Unable to resolve the template type TRelatedModel in call to method Illuminate\\Database\\Eloquent\\Model\:\:belongsTo\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: Modules/MyCar/Models/MyCarSubscription.php
+
+		-
+			message: '#^Parameter \#1 \$package of static method App\\Services\\MobileAppRegistrar\:\:register\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Providers/MyCarServiceProvider.php
+
+		-
+			message: '#^Cannot access property \$user_uuid on App\\Models\\DonationPayment\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Cannot call method fresh\(\) on App\\Models\\DonationPayment\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Cannot call method update\(\) on App\\Models\\DonationPayment\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 5
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Services\\MyCarPaymentService\:\:buildRedirectPaymentResponse\(\) should return array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string\|null, confirmation_type\?\: string\|null, payment_method_type\?\: string\}\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Services\\MyCarPaymentService\:\:buildTokenPaymentResponse\(\) should return array\{payment_uuid\: string, status\: string, amount\: int, months\: int, confirmation_url\?\: string\|null, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null, premium_until\?\: string\|null\} but returns array\{payment_uuid\: string, status\: string\|null, amount\: int, months\: int, confirmation_type\: string\|null, confirmation_url\: string\|null, payment_method_type\?\: string\|null\}\|array\{payment_uuid\: string, status\: string\|null, amount\: int, months\: int, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Services\\MyCarPaymentService\:\:createSbpPayment\(\) should return array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Services\\MyCarPaymentService\:\:resolveTier\(\) should return array\{amount\: int, months\: int, label\: string\} but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Services\\MyCarPaymentService\:\:syncPayment\(\) should return App\\Models\\DonationPayment but returns App\\Models\\DonationPayment\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:applySucceeded\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:buildTokenPaymentResponse\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:notifyPaymentSucceeded\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:markCanceled\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of method Modules\\MyCar\\Services\\MyCarPaymentService\:\:markSucceeded\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$value of method Carbon\\Carbon\:\:timezone\(\) expects DateTimeZone\|int\|string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between non\-falsy\-string and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: Modules/MyCar/Services/MyCarPaymentService.php
+
+		-
+			message: '#^Method Modules\\MyCar\\Services\\MyCarSubscriptionService\:\:getPremiumUntil\(\) should return Illuminate\\Support\\Carbon\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/MyCar/Services/MyCarSubscriptionService.php
+
+		-
+			message: '#^Cannot access offset ''carbs'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot access offset ''fats'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot access offset ''grams'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot access offset ''product_uuid'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot access offset ''proteins'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_values expects array\<T\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:mapWithKeys\(\) expects callable\(mixed, int\|string\)\: array\<int, int\>, Closure\(int, int\|string\)\: non\-empty\-array\<int, int\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Parameter \#1 \$ingredients of static method Modules\\Nutrition\\Support\\DishNutritionCalculator\:\:computeAggregates\(\) expects array\<int, array\{proteins\: float, fats\: float, carbs\: float, grams\: float\}\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionDishController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionProductController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:mapWithKeys\(\) expects callable\(mixed, int\|string\)\: array\<int, int\>, Closure\(int, int\|string\)\: non\-empty\-array\<int, int\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Admin/NutritionProductController.php
+
+		-
+			message: '#^Parameter \#1 \$name of method Illuminate\\Database\\Eloquent\\Builder\<Modules\\Nutrition\\Models\\Dish\>\:\:searchByName\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishSearchController.php
+
+		-
+			message: '#^Cannot access offset ''carbs'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Cannot access offset ''fats'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Cannot access offset ''grams'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Cannot access offset ''product_uuid'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Cannot access offset ''proteins'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Cannot cast mixed to float\.$#'
+			identifier: cast.double
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_values expects array\<T\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Parameter \#1 \$ingredients of static method Modules\\Nutrition\\Support\\DishNutritionCalculator\:\:computeAggregates\(\) expects array\<int, array\{proteins\: float, fats\: float, carbs\: float, grams\: float\}\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/DishStoreController.php
+
+		-
+			message: '#^Parameter \#1 \$name of method Illuminate\\Database\\Eloquent\\Builder\<Modules\\Nutrition\\Models\\Product\>\:\:searchByName\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Http/Controllers/Api/ProductSearchController.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: Modules/Nutrition/Http/Requests/Admin/UpdateProductRequest.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: Modules/Nutrition/Http/Requests/SearchProductByBarcodeRequest.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: Modules/Nutrition/Http/Requests/StoreProductRequest.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\ConnectionInterface\:\:getDriverName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Modules/Nutrition/Models/Dish.php
+
+		-
+			message: '#^Method Modules\\Nutrition\\Models\\Dish\:\:author\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/Nutrition/Models/Dish.php
+
+		-
+			message: '#^Method Modules\\Nutrition\\Models\\Dish\:\:ingredients\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/Nutrition/Models/Dish.php
+
+		-
+			message: '#^Method Modules\\Nutrition\\Models\\DishIngredient\:\:dish\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/Nutrition/Models/DishIngredient.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\ConnectionInterface\:\:getDriverName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: Modules/Nutrition/Models/Product.php
+
+		-
+			message: '#^Method Modules\\Nutrition\\Models\\Product\:\:author\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/Nutrition/Models/Product.php
+
+		-
+			message: '#^Parameter \#1 \$package of static method App\\Services\\MobileAppRegistrar\:\:register\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/Nutrition/Providers/NutritionServiceProvider.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/TrainingDiary/Http/Controllers/Admin/FeedbackController.php
+
+		-
+			message: '#^Property App\\Models\\FeedbackThread\:\:\$status \(string\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: Modules/TrainingDiary/Http/Controllers/Admin/FeedbackController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/TrainingDiary/Http/Controllers/Admin/UserDiscountController.php
+
+		-
+			message: '#^Parameter \#1 \$package of static method App\\Services\\MobileAppRegistrar\:\:register\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TrainingDiary/Providers/TrainingDiaryServiceProvider.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/ConfirmTripSplitPaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:createPaymentWithToken\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/ConfirmTripSplitPaymentController.php
+
+		-
+			message: '#^Parameter \#3 \$paymentToken of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:createPaymentWithToken\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/ConfirmTripSplitPaymentController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: Modules/TripSplit/Http/Controllers/Api/CreateTripSplitPaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:createPayment\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/CreateTripSplitPaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:createSbpPayment\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/CreateTripSplitPaymentController.php
+
+		-
+			message: '#^Parameter \#2 \$trip of method Modules\\TripSplit\\Services\\TripSplitSettlementService\:\:settle\(\) expects array\<string, mixed\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/SettleTripController.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: Modules/TripSplit/Http/Controllers/Api/TripSplitPaymentStatusController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Requests/ConfirmTripSplitPaymentRequest.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Http/Requests/CreateTripSplitPaymentRequest.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Models\\Settlement\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/TripSplit/Models/Settlement.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Models\\UsageBalance\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: Modules/TripSplit/Models/UsageBalance.php
+
+		-
+			message: '#^Anonymous function should return Modules\\TripSplit\\Models\\UsageBalance but returns Modules\\TripSplit\\Models\\UsageBalance\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitCreditsService.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitCreditsService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 5
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:buildRedirectPaymentResponse\(\) should return array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, credits\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, credits\: int, status\: string\|null, confirmation_type\?\: string\|null, payment_method_type\?\: string\}\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:buildTokenPaymentResponse\(\) should return array\{payment_uuid\: string, status\: string, amount\: int, credits\: int, confirmation_url\?\: string\|null, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null, usage_count\?\: int\} but returns array\{payment_uuid\: string, status\: string\|null, amount\: int, credits\: int, confirmation_type\: string\|null, confirmation_url\: string\|null, payment_method_type\?\: string\|null\}\|array\{payment_uuid\: string, status\: string\|null, amount\: int, credits\: int, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:createSbpPayment\(\) should return array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, credits\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, credits\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:resolveTier\(\) should return array\{amount\: int, credits\: int, label\: string\} but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:syncPayment\(\) should return App\\Models\\DonationPayment but returns App\\Models\\DonationPayment\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:applySucceeded\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:buildTokenPaymentResponse\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:markCanceled\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of method Modules\\TripSplit\\Services\\TripSplitPaymentService\:\:markSucceeded\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitPaymentService.php
+
+		-
+			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 6
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Binary operation "\." between ''\#'' and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot access offset ''amount'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 4
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot access offset ''consumption_rub'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot access offset ''currency_code'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot access offset ''participant_id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 6
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot cast mixed to float\.$#'
+			identifier: cast.double
+			count: 10
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 9
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 8
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Parameter \#1 \$currencies of method Modules\\TripSplit\\Services\\TripSplitSettlementCalculator\:\:buildRates\(\) expects array\<int, array\<string, mixed\>\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Parameter \#1 \$participants of method Modules\\TripSplit\\Services\\TripSplitSettlementCalculator\:\:indexParticipants\(\) expects array\<int, array\<string, mixed\>\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Parameter \#1 \$transaction of method Modules\\TripSplit\\Services\\TripSplitSettlementCalculator\:\:breakDownTransaction\(\) expects array\<string, mixed\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Possibly invalid array key type mixed\.$#'
+			identifier: offsetAccess.invalidOffset
+			count: 3
+			path: Modules/TripSplit/Services/TripSplitSettlementCalculator.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementService.php
+
+		-
+			message: '#^Parameter \#1 \$settlement of method Modules\\TripSplit\\Services\\TripSplitSettlementService\:\:buildResponse\(\) expects Modules\\TripSplit\\Models\\Settlement, Modules\\TripSplit\\Models\\Settlement\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: Modules/TripSplit/Services/TripSplitSettlementService.php
+
+		-
+			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 3
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Binary operation "\+\=" between float and mixed results in an error\.$#'
+			identifier: assignOp.invalid
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Binary operation "\-\=" between float and mixed results in an error\.$#'
+			identifier: assignOp.invalid
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''amount'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 7
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''amount_rub'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''balance_rub'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 10
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''consumption'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''consumption_rub'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''currency_code'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''from_participant_id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 5
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''owes_rub'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 6
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''paid_in_receipt_currency'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''paid_rub'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 4
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''receipt_amount'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''share_percent'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset ''to_participant_id'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 5
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset 0 on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 23
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset 1 on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 11
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot access offset 2 on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot cast mixed to float\.$#'
+			identifier: cast.double
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Parameter \#2 \$haystack of method PHPUnit\\Framework\\Assert\:\:assertCount\(\) expects Countable\|iterable, mixed given\.$#'
+			identifier: argument.type
+			count: 4
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Possibly invalid array key type mixed\.$#'
+			identifier: offsetAccess.invalidOffset
+			count: 2
+			path: Modules/TripSplit/Tests/Unit/TripSplitSettlementCalculatorTest.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: app/Http/Controllers/Api/Donation/ConfirmDonationController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method App\\Services\\DonationPaymentService\:\:createPaymentWithToken\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/ConfirmDonationController.php
+
+		-
+			message: '#^Parameter \#3 \$paymentToken of method App\\Services\\DonationPaymentService\:\:createPaymentWithToken\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/ConfirmDonationController.php
+
+		-
+			message: '#^Parameter \#4 \$app of method App\\Services\\DonationPaymentService\:\:createPaymentWithToken\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/ConfirmDonationController.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 2
+			path: app/Http/Controllers/Api/Donation/CreateDonationController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method App\\Services\\DonationPaymentService\:\:createPayment\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/CreateDonationController.php
+
+		-
+			message: '#^Parameter \#1 \$userUuid of method App\\Services\\DonationPaymentService\:\:createSbpPayment\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/CreateDonationController.php
+
+		-
+			message: '#^Parameter \#3 \$app of method App\\Services\\DonationPaymentService\:\:createPayment\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/CreateDonationController.php
+
+		-
+			message: '#^Parameter \#3 \$app of method App\\Services\\DonationPaymentService\:\:createSbpPayment\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/CreateDonationController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/Donation/SubscriptionStatusController.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of static method App\\Models\\DonationPayment\:\:resolveFromYooKassaObject\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Donation/YooKassaWebhookController.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackMessageController.php
+
+		-
+			message: '#^Parameter \#1 \$uuid of method App\\Http\\Controllers\\Api\\Feedback\\FeedbackMessageController\:\:resolveUserId\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackMessageController.php
+
+		-
+			message: '#^Part \$validated\[''text''\] \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackMessageController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackMessageController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Binary operation "\." between "\\n\\n" and mixed results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Models\\FeedbackThread\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, sender\: string, body\: string, created_at\: string\}, Closure\(App\\Models\\FeedbackMessage\)\: array\{id\: int, sender\: string, body\: string, created_at\: string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Parameter \#1 \$thread of method App\\Http\\Controllers\\Api\\Feedback\\FeedbackThreadController\:\:presentThread\(\) expects App\\Models\\FeedbackThread, App\\Models\\FeedbackThread\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Parameter \#1 \$uuid of method App\\Http\\Controllers\\Api\\Feedback\\FeedbackThreadController\:\:resolveUserId\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 4
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Part \$validated\[''app''\] \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Part \$validated\[''text''\] \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/Feedback/FeedbackThreadController.php
+
+		-
+			message: '#^Parameter \#1 \$app of method App\\Services\\TelegramNotificationService\:\:sendFeedbackNotification\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserFeedbackController.php
+
+		-
+			message: '#^Parameter \#1 \$visitIp of static method App\\Models\\UserFeedback\:\:saveFeedback\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserFeedbackController.php
+
+		-
+			message: '#^Parameter \#2 \$app of static method App\\Models\\UserFeedback\:\:saveFeedback\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserFeedbackController.php
+
+		-
+			message: '#^Parameter \#2 \$text of method App\\Services\\TelegramNotificationService\:\:sendFeedbackNotification\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserFeedbackController.php
+
+		-
+			message: '#^Parameter \#3 \$text of static method App\\Models\\UserFeedback\:\:saveFeedback\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserFeedbackController.php
+
+		-
+			message: '#^Parameter \#4 \$uuid of static method App\\Models\\UserFeedback\:\:saveFeedback\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserFeedbackController.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/UserOpenController.php
+
+		-
+			message: '#^Parameter \#1 \$visitIp of static method App\\Models\\UserVisit\:\:incrementVisitCount\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserOpenController.php
+
+		-
+			message: '#^Parameter \#2 \$app of static method App\\Models\\UserVisit\:\:incrementVisitCount\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/UserOpenController.php
+
+		-
+			message: '#^Binary operation "\-" between mixed and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/Http/Controllers/FeedbackController.php
+
+		-
+			message: '#^Parameter \#4 \$currentPage of class Illuminate\\Pagination\\LengthAwarePaginator constructor expects int\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/FeedbackController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Requests/Donation/ConfirmDonationRequest.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Requests/Donation/CreateDonationRequest.php
+
+		-
+			message: '#^Method App\\Models\\DonationPayment\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/DonationPayment.php
+
+		-
+			message: '#^Method App\\Models\\FeedbackMessage\:\:thread\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FeedbackMessage.php
+
+		-
+			message: '#^Class App\\Models\\FeedbackThread uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FeedbackThread.php
+
+		-
+			message: '#^Method App\\Models\\FeedbackThread\:\:messages\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FeedbackThread.php
+
+		-
+			message: '#^Method App\\Models\\FeedbackThread\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/FeedbackThread.php
+
+		-
+			message: '#^Access to an undefined property object\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/UserFeedback.php
+
+		-
+			message: '#^Class App\\Models\\UserFeedback has PHPDoc tag @method for method create\(\) parameter \#1 \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/UserFeedback.php
+
+		-
+			message: '#^Method App\\Models\\UserFeedback\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/UserFeedback.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$uuid with type int\|null is not subtype of native type string\|null\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: app/Models/UserFeedback.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\UserFeedback\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/UserFeedback.php
+
+		-
+			message: '#^Class App\\Models\\UserVisit has PHPDoc tag @method for method firstOrNew\(\) parameter \#1 \$array with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/UserVisit.php
+
+		-
+			message: '#^Class App\\Models\\UserVisit has PHPDoc tag @method for method firstOrNew\(\) parameter \#2 \$array1 with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/UserVisit.php
+
+		-
+			message: '#^Method App\\Models\\UserVisit\:\:user\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Models/UserVisit.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\UserVisit\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: app/Models/UserVisit.php
+
+		-
+			message: '#^Cannot call method copy\(\) on Illuminate\\Support\\Carbon\|string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AdFreeSubscriptionService.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/AdFreeSubscriptionService.php
+
+		-
+			message: '#^Cannot access offset ''label'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Cannot access offset ''months'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Cannot call method timezone\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Method App\\Services\\DonationPaymentService\:\:buildRedirectPaymentResponse\(\) should return array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string\|null, confirmation_type\?\: string\|null, payment_method_type\?\: string\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Method App\\Services\\DonationPaymentService\:\:buildTokenPaymentResponse\(\) should return array\{payment_uuid\: string, status\: string, amount\: int, months\: int, confirmation_url\?\: string\|null, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null, ad_free_until\?\: string\|null\} but returns array\{payment_uuid\: string, status\: string\|null, amount\: int, months\: int, confirmation_type\: string\|null, confirmation_url\: string\|null, payment_method_type\?\: string\|null\}\|array\{payment_uuid\: string, status\: string\|null, amount\: int, months\: int, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Method App\\Services\\DonationPaymentService\:\:createPayment\(\) should return array\{payment_uuid\: string, confirmation_url\: string, amount\: int, months\: int, status\: string\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Method App\\Services\\DonationPaymentService\:\:createSbpPayment\(\) should return array\{payment_uuid\: string, confirmation_url\: string, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\} but returns array\{payment_uuid\: string, confirmation_url\: string\|null, amount\: int, months\: int, status\: string, confirmation_type\?\: string\|null, payment_method_type\?\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Method App\\Services\\DonationPaymentService\:\:handleWebhook\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Method App\\Services\\DonationPaymentService\:\:syncPayment\(\) should return App\\Models\\DonationPayment but returns App\\Models\\DonationPayment\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method App\\Services\\DonationPaymentService\:\:applySucceeded\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method App\\Services\\DonationPaymentService\:\:buildTokenPaymentResponse\(\) expects App\\Models\\DonationPayment, App\\Models\\DonationPayment\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of method App\\Services\\DonationPaymentService\:\:markCanceled\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Parameter \#1 \$paymentObject of method App\\Services\\DonationPaymentService\:\:markSucceeded\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Parameter \#2 \$tier of method App\\Services\\DonationPricingService\:\:amountFor\(\) expects array\{amount\: int, months\: int, label\: string\}, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DonationPaymentService.php
+
+		-
+			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Cannot access offset ''amount'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Cannot access offset ''label'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Cannot access offset ''months'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Cannot cast mixed to int\.$#'
+			identifier: cast.int
+			count: 3
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Parameter \#2 \$tier of method App\\Services\\DonationPricingService\:\:amountFor\(\) expects array\{amount\: int, months\: int, label\: string\}, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DonationPricingService.php
+
+		-
+			message: '#^Cannot access offset string on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: app/Services/MobileAppRegistrar.php
+
+		-
+			message: '#^Property App\\Services\\TelegramNotificationService\:\:\$apiUrl \(string\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TelegramNotificationService.php
+
+		-
+			message: '#^Property App\\Services\\TelegramNotificationService\:\:\$chatId \(int\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TelegramNotificationService.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 2
+			path: app/Services/YooKassa/YooKassaRequestLogger.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 4
+			path: app/Services/YooKassaService.php
+
+		-
+			message: '#^Method App\\Services\\YooKassaService\:\:createPayment\(\) should return YooKassa\\Request\\Payments\\CreatePaymentResponse but returns YooKassa\\Request\\Payments\\CreatePaymentResponse\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/YooKassaService.php

@@ -31,9 +31,15 @@ class RegisterWithEmailController extends Controller
     public function __invoke(RegisterWithEmailRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        // ->string()->toString() gets a real string out of validated input without an
+        // explicit (string) cast on what's typed as mixed — validated() from a FormRequest
+        // doesn't narrow the type even though the rules already guarantee it's a string.
+        $email = $request->string('email')->toString();
+        $password = $request->string('password')->toString();
 
         if (! empty($validated['uuid'])) {
-            $user = User::query()->where('uuid', $validated['uuid'])->first();
+            $uuid = $request->string('uuid')->toString();
+            $user = User::query()->where('uuid', $uuid)->first();
 
             if ($user === null) {
                 return response()->json(['error' => 'not_found'], 404);
@@ -43,11 +49,9 @@ class RegisterWithEmailController extends Controller
                 return response()->json(['error' => 'already_registered'], 409);
             }
 
-            $user->email = $validated['email'];
-            $user->password = Hash::make($validated['password']);
+            $user->email = $email;
+            $user->password = Hash::make($password);
             $user->save();
-
-            $uuid = $user->uuid;
         } else {
             do {
                 $uuid = (string) Str::uuid();
@@ -56,8 +60,8 @@ class RegisterWithEmailController extends Controller
             DB::table('users')->insert([
                 'uuid' => $uuid,
                 'name' => 'user_'.substr($uuid, 0, 8),
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'email' => $email,
+                'password' => Hash::make($password),
             ]);
         }
 

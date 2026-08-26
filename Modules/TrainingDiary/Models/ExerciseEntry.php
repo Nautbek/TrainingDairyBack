@@ -26,8 +26,8 @@ use Illuminate\Support\Carbon;
  * @property string $measurement_type
  * @property Carbon $logged_at
  * @property int|null $client_id
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class ExerciseEntry extends Model
 {
@@ -49,13 +49,16 @@ class ExerciseEntry extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_uuid', 'uuid');
     }
 
     /**
-     * @return HasMany<ApproachEntry>
+     * @return HasMany<ApproachEntry, $this>
      */
     public function approaches(): HasMany
     {
