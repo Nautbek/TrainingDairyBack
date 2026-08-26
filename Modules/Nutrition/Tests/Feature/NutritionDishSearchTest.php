@@ -73,6 +73,29 @@ class NutritionDishSearchTest extends TestCase
             ]);
     }
 
+    public function test_search_dishes_includes_own_draft_dish_when_uuid_header_is_sent(): void
+    {
+        $author = $this->makeUser();
+        $stranger = $this->makeUser();
+
+        $this->makeDish($author, 'Borscht draft', ProductStatus::Draft);
+
+        // Без X-User-UUID (или с чужим) черновик не виден — как и раньше.
+        $this->getJson('/api/nutrition/dishes/search?name=borscht')
+            ->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson('/api/nutrition/dishes/search?name=borscht', ['X-User-UUID' => $stranger])
+            ->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+
+        // Автор должен находить и использовать своё ещё не одобренное блюдо.
+        $this->getJson('/api/nutrition/dishes/search?name=borscht', ['X-User-UUID' => $author])
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Borscht draft');
+    }
+
     public function test_search_dishes_fails_validation_without_name(): void
     {
         $response = $this->getJson('/api/nutrition/dishes/search');

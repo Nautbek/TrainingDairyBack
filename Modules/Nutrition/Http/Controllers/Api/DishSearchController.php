@@ -19,9 +19,18 @@ class DishSearchController extends Controller
             $validated = $request->validated();
 
             $dishes = Dish::query()
-                ->select(['id', 'uuid', 'name', 'water_grams', 'total_grams', 'proteins', 'fats', 'carbs', 'calories', 'status'])
+                ->select(['id', 'uuid', 'name', 'water_grams', 'total_grams', 'proteins', 'fats', 'carbs', 'calories', 'author_uuid', 'status'])
                 ->searchByName($validated['name'])
-                ->where('status', ProductStatus::Active)
+                // Чужие блюда видны только после модерации (Active), но автор должен находить
+                // и использовать своё блюдо сразу, пока оно ещё Draft — иначе им нельзя
+                // залогировать только что созданный рецепт (см. симметрию с ProductSearchController,
+                // который вообще не гейтит поиск по статусу).
+                ->where(function ($q) use ($validated) {
+                    $q->where('status', ProductStatus::Active);
+                    if (! empty($validated['uuid'])) {
+                        $q->orWhere('author_uuid', $validated['uuid']);
+                    }
+                })
                 ->orderBy('name')
                 ->paginate(self::PER_PAGE);
 
