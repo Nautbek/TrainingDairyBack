@@ -17,3 +17,9 @@ parameters:
         - */database/migrations/*
         - */database/seeders/*
         - */database/factories/*
+        # Подключаемые модули других приложений на общем бэке (см. CLAUDE.md — каждое
+        # приложение регистрирует свои роуты из своего провайдера) — не то, что ведём в
+        # рамках этой работы; TrainingDiary сканируется как обычно.
+        - Modules/MyCar/*
+        - Modules/Nutrition/*
+        - Modules/TripSplit/*
